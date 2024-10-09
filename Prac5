@@ -1,0 +1,110 @@
+public abstract class Document
+{
+    public abstract void Open();
+}
+
+public class Report : Document
+{
+    public override void Open()
+    {
+        Console.WriteLine("Открытие отчета...");
+    }
+}
+
+public class Resume : Document
+{
+    public override void Open()
+    {
+        Console.WriteLine("Открытие резюме...");
+    }
+}
+
+public class Letter : Document
+{
+    public override void Open()
+    {
+        Console.WriteLine("Открытие письма...");
+    }
+}
+
+public class Invoice : Document
+{
+    public override void Open()
+    {
+        Console.WriteLine("Открытие счета...");
+    }
+}
+
+public abstract class DocumentFactory
+{
+    public abstract Document CreateDocument();
+}
+
+public class ReportFactory : DocumentFactory
+{
+    public override Document CreateDocument()
+    {
+        return new Report();
+    }
+}
+
+public class ResumeFactory : DocumentFactory
+{
+    public override Document CreateDocument()
+    {
+        return new Resume();
+    }
+}
+
+public class LetterFactory : DocumentFactory
+{
+    public override Document CreateDocument()
+    {
+        return new Letter();
+    }
+}
+
+public class InvoiceFactory : DocumentFactory
+{
+    public override Document CreateDocument()
+    {
+        return new Invoice();
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        Console.WriteLine("Выберите тип документа для создания (отчет, резюме, письмо, счет): ");
+        string documentType = Console.ReadLine().ToLower();
+
+        DocumentFactory factory = null;
+
+        switch (documentType)
+        {
+            case "отчет":
+                factory = new ReportFactory();
+                break;
+
+            case "резюме":
+                factory = new ResumeFactory();
+                break;
+
+            case "письмо":
+                factory = new LetterFactory();
+                break;
+
+            case "счет":
+                factory = new InvoiceFactory();
+                break;
+
+            default:
+                Console.WriteLine("Неверный тип документа.");
+                return;
+        }
+
+        Document document = factory.CreateDocument();
+        document.Open();
+    }
+}
