@@ -1,0 +1,139 @@
+using System;
+
+public interface ITransport
+{
+    void Move();
+    void FuelUp();
+}
+
+public class Car : ITransport
+{
+    private string _model;
+    private int _speed;
+
+    public Car(string model, int speed)
+    {
+        _model = model;
+        _speed = speed;
+    }
+
+    public void Move()
+    {
+        Console.WriteLine($"Автомобиль {_model} едет со скоростью {_speed} км/ч.");
+    }
+
+    public void FuelUp()
+    {
+        Console.WriteLine($"Автомобиль {_model} заправляется бензином.");
+    }
+}
+
+public class Motorcycle : ITransport
+{
+    private string _model;
+    private int _speed;
+
+    public Motorcycle(string model, int speed)
+    {
+        _model = model;
+        _speed = speed;
+    }
+
+    public void Move()
+    {
+        Console.WriteLine($"Мотоцикл {_model} едет со скоростью {_speed} км/ч.");
+    }
+
+    public void FuelUp()
+    {
+        Console.WriteLine($"Мотоцикл {_model} заправляется бензином.");
+    }
+}
+
+public class Plane : ITransport
+{
+    private string _model;
+    private int _speed;
+
+    public Plane(string model, int speed)
+    {
+        _model = model;
+        _speed = speed;
+    }
+
+    public void Move()
+    {
+        Console.WriteLine($"Самолет {_model} летит со скоростью {_speed} км/ч.");
+    }
+
+    public void FuelUp()
+    {
+        Console.WriteLine($"Самолет {_model} заправляется авиационным топливом.");
+    }
+}
+
+public abstract class TransportFactory
+{
+    public abstract ITransport CreateTransport(string model, int speed);
+}
+
+public class CarFactory : TransportFactory
+{
+    public override ITransport CreateTransport(string model, int speed)
+    {
+        return new Car(model, speed);
+    }
+}
+
+public class MotorcycleFactory : TransportFactory
+{
+    public override ITransport CreateTransport(string model, int speed)
+    {
+        return new Motorcycle(model, speed);
+    }
+}
+
+public class PlaneFactory : TransportFactory
+{
+    public override ITransport CreateTransport(string model, int speed)
+    {
+        return new Plane(model, speed);
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        Console.WriteLine("Выберите тип транспортного средства (автомобиль, мотоцикл, самолет): ");
+        string transportType = Console.ReadLine().ToLower();
+
+        Console.WriteLine("Введите модель транспортного средства: ");
+        string model = Console.ReadLine();
+
+        Console.WriteLine("Введите скорость транспортного средства (км/ч): ");
+        int speed = int.Parse(Console.ReadLine());
+
+        TransportFactory factory = null;
+
+        switch (transportType)
+        {
+            case "автомобиль":
+                factory = new CarFactory();
+                break;
+            case "мотоцикл":
+                factory = new MotorcycleFactory();
+                break;
+            case "самолет":
+                factory = new PlaneFactory();
+                break;
+            default:
+                Console.WriteLine("Неверный тип транспортного средства.");
+                return;
+        }
+
+        ITransport transport = factory.CreateTransport(model, speed);
+        transport.Move();
+        transport.FuelUp();
+    }
+}
