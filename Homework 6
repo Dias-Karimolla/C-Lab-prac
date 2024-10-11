@@ -1,0 +1,208 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+
+namespace DesignPatterns.Module06.Singleton
+{
+    public enum LogLevel
+    {
+        INFO, WARNING, ERROR
+    }
+
+    public class Logger
+    {
+        private Logger() { }
+
+        private static Logger _instance;
+        private static readonly object _lock = new object();
+
+        public static Logger GetInstance()
+        {
+            // Потокобезопасная инициализация одиночки
+            if (_instance == null)
+            {
+                lock (_lock)
+                {
+                    if (_instance == null)
+                    {
+                        _instance = new Logger();
+                    }
+                }
+            }
+
+            return _instance;
+        }
+
+        public void Log(LogLevel logLevel, string message)
+        {
+            string logMessage = $"{DateTime.Now} [{logLevel}] {message}\n";
+            File.AppendAllText(@"log.txt", logMessage); // лог файл будет в папке с проектом
+        }
+    }
+
+    public class Singleton
+    {
+        private static Singleton _instance;
+        private static readonly object _lock = new object();
+
+        private Singleton()
+        {
+            Console.WriteLine("Экземпляр Singleton создан");
+        }
+
+        public static Singleton Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    lock (_lock)
+                    {
+                        if (_instance == null)
+                        {
+                            _instance = new Singleton();
+                        }
+                    }
+                }
+
+                return _instance;
+            }
+        }
+
+        public void Do()
+        {
+            Console.WriteLine("Метод Do вызван");
+        }
+    }
+
+    // Класс продукта (пицца)
+    public class Pizza
+    {
+        public string Size { get; set; }
+        public string Cheese { get; set; }
+        public string Sauce { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format("Pizza Size: {0}, Cheese: {1}, Sauce: {2}",
+                Size, Cheese, Sauce);
+        }
+    }
+
+    // Интерфейс строителя пиццы
+    public interface IPizzaBuilder
+    {
+        void SetSize();
+        void SetCheese();
+        void SetSauce();
+        Pizza GetPizza();
+    }
+
+    // Конкретный строитель для пиццы "Маргарита"
+    public class MargaritaPizzaBuilder : IPizzaBuilder
+    {
+        private Pizza _pizza = new Pizza();
+        public void SetSize()
+        {
+            _pizza.Size = "Средняя";
+        }
+
+        public void SetCheese()
+        {
+            _pizza.Cheese = "Моцарелла";
+        }
+
+        public void SetSauce()
+        {
+            _pizza.Sauce = "Томатный соус";
+        }
+
+        public Pizza GetPizza()
+        {
+            return _pizza;
+        }
+    }
+
+    // Конкретный строитель для пиццы "Пепперони"
+    public class PepperoniPizzaBuilder : IPizzaBuilder
+    {
+        private Pizza _pizza = new Pizza();
+        public void SetSize()
+        {
+            _pizza.Size = "Большая";
+        }
+
+        public void SetCheese()
+        {
+            _pizza.Cheese = "Чеддер";
+        }
+
+        public void SetSauce()
+        {
+            _pizza.Sauce = "Томатный соус";
+        }
+
+        public Pizza GetPizza()
+        {
+            return _pizza;
+        }
+    }
+
+    // Директор для управления процессом создания пиццы
+    public class PizzaDirector
+    {
+        private IPizzaBuilder _pizzaBuilder;
+
+        public PizzaDirector(IPizzaBuilder pizzaBuilder)
+        {
+            _pizzaBuilder = pizzaBuilder;
+        }
+
+        public void ConstructPizza()
+        {
+            _pizzaBuilder.SetSize();
+            _pizzaBuilder.SetCheese();
+            _pizzaBuilder.SetSauce();
+        }
+
+        public Pizza GetPizza()
+        {
+            return _pizzaBuilder.GetPizza();
+        }
+    }
+
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            Logger log = Logger.GetInstance();
+            log.Log(LogLevel.INFO, "Начало работы программы");
+
+            try
+            {
+                // Создание пиццы "Маргарита"
+                IPizzaBuilder margaritaBuilder = new MargaritaPizzaBuilder();
+                PizzaDirector pizzaDirector1 = new PizzaDirector(margaritaBuilder);
+                pizzaDirector1.ConstructPizza();
+                Pizza margarita = pizzaDirector1.GetPizza();
+                Console.WriteLine(margarita);
+                log.Log(LogLevel.INFO, "Пицца Маргарита была создана");
+
+                // Создание пиццы "Пепперони"
+                IPizzaBuilder pepperoniBuilder = new PepperoniPizzaBuilder();
+                PizzaDirector pizzaDirector2 = new PizzaDirector(pepperoniBuilder);
+                pizzaDirector2.ConstructPizza();
+                Pizza pepperoni = pizzaDirector2.GetPizza();
+                Console.WriteLine(pepperoni);
+                log.Log(LogLevel.INFO, "Пицца Пепперони была создана");
+
+            }
+            catch (Exception ex)
+            {
+                log.Log(LogLevel.ERROR, ex.Message);
+            }
+
+            log.Log(LogLevel.INFO, "Конец работы программы");
+        }
+    }
+}
