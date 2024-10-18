@@ -1,0 +1,300 @@
+using System;
+using System.Collections.Generic;
+
+public interface ICommand
+{
+    void Execute();
+    void Undo();
+}
+
+public class Light
+{
+    public void On()
+    {
+        Console.WriteLine("Свет включен.");
+    }
+
+    public void Off()
+    {
+        Console.WriteLine("Свет выключен.");
+    }
+}
+
+public class LightOnCommand : ICommand
+{
+    private Light _light;
+
+    public LightOnCommand(Light light)
+    {
+        _light = light;
+    }
+
+    public void Execute()
+    {
+        _light.On();
+    }
+
+    public void Undo()
+    {
+        _light.Off();
+    }
+}
+
+public class LightOffCommand : ICommand
+{
+    private Light _light;
+
+    public LightOffCommand(Light light)
+    {
+        _light = light;
+    }
+
+    public void Execute()
+    {
+        _light.Off();
+    }
+
+    public void Undo()
+    {
+        _light.On();
+    }
+}
+
+public class Television
+{
+    public void On()
+    {
+        Console.WriteLine("Телевизор включен.");
+    }
+
+    public void Off()
+    {
+        Console.WriteLine("Телевизор выключен.");
+    }
+}
+
+public class TelevisionOnCommand : ICommand
+{
+    private Television _television;
+
+    public TelevisionOnCommand(Television television)
+    {
+        _television = television;
+    }
+
+    public void Execute()
+    {
+        _television.On();
+    }
+
+    public void Undo()
+    {
+        _television.Off();
+    }
+}
+
+public class TelevisionOffCommand : ICommand
+{
+    private Television _television;
+
+    public TelevisionOffCommand(Television television)
+    {
+        _television = television;
+    }
+
+    public void Execute()
+    {
+        _television.Off();
+    }
+
+    public void Undo()
+    {
+        _television.On();
+    }
+}
+
+public class RemoteControl
+{
+    private ICommand _onCommand;
+    private ICommand _offCommand;
+
+    public void SetCommands(ICommand onCommand, ICommand offCommand)
+    {
+        _onCommand = onCommand;
+        _offCommand = offCommand;
+    }
+
+    public void PressOnButton()
+    {
+        _onCommand.Execute();
+    }
+
+    public void PressOffButton()
+    {
+        _offCommand.Execute();
+    }
+
+    public void PressUndoButton()
+    {
+        _onCommand.Undo();
+    }
+}
+
+public abstract class Beverage
+{
+    public void PrepareRecipe()
+    {
+        BoilWater();
+        Brew();
+        PourInCup();
+        AddCondiments();
+    }
+
+    private void BoilWater()
+    {
+        Console.WriteLine("Кипячение воды...");
+    }
+
+    private void PourInCup()
+    {
+        Console.WriteLine("Наливание в чашку...");
+    }
+
+    protected abstract void Brew();
+    protected abstract void AddCondiments();
+}
+
+public class Tea : Beverage
+{
+    protected override void Brew()
+    {
+        Console.WriteLine("Заваривание чая...");
+    }
+
+    protected override void AddCondiments()
+    {
+        Console.WriteLine("Добавление лимона...");
+    }
+}
+
+public class Coffee : Beverage
+{
+    protected override void Brew()
+    {
+        Console.WriteLine("Заваривание кофе...");
+    }
+
+    protected override void AddCondiments()
+    {
+        Console.WriteLine("Добавление сахара и молока...");
+    }
+}
+
+public interface IMediator
+{
+    void SendMessage(string message, Colleague colleague);
+}
+
+public abstract class Colleague
+{
+    protected IMediator _mediator;
+
+    public Colleague(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
+    public abstract void ReceiveMessage(string message);
+}
+
+public class ChatMediator : IMediator
+{
+    private List<Colleague> _colleagues;
+
+    public ChatMediator()
+    {
+        _colleagues = new List<Colleague>();
+    }
+
+    public void RegisterColleague(Colleague colleague)
+    {
+        _colleagues.Add(colleague);
+    }
+
+    public void SendMessage(string message, Colleague sender)
+    {
+        foreach (var colleague in _colleagues)
+        {
+            if (colleague != sender)
+            {
+                colleague.ReceiveMessage(message);
+            }
+        }
+    }
+}
+
+public class User : Colleague
+{
+    private string _name;
+
+    public User(IMediator mediator, string name) : base(mediator)
+    {
+        _name = name;
+    }
+
+    public void Send(string message)
+    {
+        Console.WriteLine($"{_name} отправляет сообщение: {message}");
+        _mediator.SendMessage(message, this);
+    }
+
+    public override void ReceiveMessage(string message)
+    {
+        Console.WriteLine($"{_name} получил сообщение: {message}");
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        Light livingRoomLight = new Light();
+        Television tv = new Television();
+
+        ICommand lightOn = new LightOnCommand(livingRoomLight);
+        ICommand lightOff = new LightOffCommand(livingRoomLight);
+        ICommand tvOn = new TelevisionOnCommand(tv);
+        ICommand tvOff = new TelevisionOffCommand(tv);
+
+        RemoteControl remote = new RemoteControl();
+        remote.SetCommands(lightOn, lightOff);
+        Console.WriteLine("Управление светом:");
+        remote.PressOnButton();
+        remote.PressOffButton();
+        remote.PressUndoButton();
+
+        remote.SetCommands(tvOn, tvOff);
+        Console.WriteLine("\nУправление телевизором:");
+        remote.PressOnButton();
+        remote.PressOffButton();
+
+        Beverage tea = new Tea();
+        Console.WriteLine("\nПриготовление чая:");
+        tea.PrepareRecipe();
+
+        Beverage coffee = new Coffee();
+        Console.WriteLine("\nПриготовление кофе:");
+        coffee.PrepareRecipe();
+
+        ChatMediator chatMediator = new ChatMediator();
+        User user1 = new User(chatMediator, "Алиса");
+        User user2 = new User(chatMediator, "Боб");
+        User user3 = new User(chatMediator, "Чарли");
+        chatMediator.RegisterColleague(user1);
+        chatMediator.RegisterColleague(user2);
+        chatMediator.RegisterColleague(user3);
+        user1.Send("Привет всем!");
+        user2.Send("Привет, Алиса!");
+        user3.Send("Всем привет!");
+    }
+}
