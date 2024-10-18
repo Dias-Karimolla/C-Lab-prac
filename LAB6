@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Collections.Generic;
 
-// ==== Singleton ====
+
 public enum LogLevel { INFO, WARNING, ERROR }
 
 public class Logger
@@ -34,7 +34,7 @@ public class Logger
     public string ReadLogs() => File.Exists(_logFilePath) ? File.ReadAllText(_logFilePath) : "No logs";
 }
 
-// ==== Builder ====
+
 public class Computer
 {
     public string CPU { get; set; }
@@ -78,7 +78,7 @@ public class ComputerDirector
     public Computer GetComputer() => _builder.GetComputer();
 }
 
-// ==== Prototype ====
+//  Prototype
 public interface IPrototype { IPrototype Clone(); }
 
 public class Section : IPrototype
