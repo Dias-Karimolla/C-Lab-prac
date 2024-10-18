@@ -1,0 +1,161 @@
+using System;
+using System.Collections.Generic;
+
+namespace PaymentAndObserverApp
+{
+    public interface IPaymentStrategy
+    {
+        void Pay(int amount);
+    }
+
+    public class CreditCardPayment : IPaymentStrategy
+    {
+        public void Pay(int amount)
+        {
+            Console.WriteLine($"Оплата {amount} банковской картой.");
+        }
+    }
+
+    public class PayPalPayment : IPaymentStrategy
+    {
+        public void Pay(int amount)
+        {
+            Console.WriteLine($"Оплата {amount} через PayPal.");
+        }
+    }
+
+    public class CryptoPayment : IPaymentStrategy
+    {
+        public void Pay(int amount)
+        {
+            Console.WriteLine($"Оплата {amount} криптовалютой.");
+        }
+    }
+
+    public class PaymentContext
+    {
+        private IPaymentStrategy _paymentStrategy;
+
+        public PaymentContext(IPaymentStrategy paymentStrategy)
+        {
+            _paymentStrategy = paymentStrategy;
+        }
+
+        public void SetPaymentStrategy(IPaymentStrategy paymentStrategy)
+        {
+            _paymentStrategy = paymentStrategy;
+        }
+
+        public void ProcessPayment(int amount)
+        {
+            Console.WriteLine("Процесс оплаты...");
+            _paymentStrategy.Pay(amount);
+        }
+    }
+
+    public interface IObserver
+    {
+        void Update(string currency, double rate);
+    }
+
+    public interface ISubject
+    {
+        void RegisterObserver(IObserver observer);
+        void RemoveObserver(IObserver observer);
+        void NotifyObservers();
+    }
+
+    public class CurrencyExchange : ISubject
+    {
+        private List<IObserver> _observers;
+        private Dictionary<string, double> _exchangeRates;
+
+        public CurrencyExchange()
+        {
+            _observers = new List<IObserver>();
+            _exchangeRates = new Dictionary<string, double>();
+        }
+
+        public void RegisterObserver(IObserver observer)
+        {
+            _observers.Add(observer);
+        }
+
+        public void RemoveObserver(IObserver observer)
+        {
+            _observers.Remove(observer);
+        }
+
+        public void NotifyObservers()
+        {
+            foreach (var observer in _observers)
+            {
+                foreach (var rate in _exchangeRates)
+                {
+                    observer.Update(rate.Key, rate.Value);
+                }
+            }
+        }
+
+        public void SetExchangeRate(string currency, double rate)
+        {
+            _exchangeRates[currency] = rate;
+            NotifyObservers();
+        }
+    }
+
+    public class DisplayObserver : IObserver
+    {
+        public void Update(string currency, double rate)
+        {
+            Console.WriteLine($"Обновление экрана: {currency} курс {rate}");
+        }
+    }
+
+    public class FileLogObserver : IObserver
+    {
+        public void Update(string currency, double rate)
+        {
+            Console.WriteLine($"Запись в файл: {currency} курс {rate}");
+        }
+    }
+
+    public class EmailNotificationObserver : IObserver
+    {
+        public void Update(string currency, double rate)
+        {
+            Console.WriteLine($"Отправка уведомления: {currency} курс {rate}");
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            var paymentContext = new PaymentContext(new CreditCardPayment());
+            paymentContext.ProcessPayment(150);
+
+            paymentContext.SetPaymentStrategy(new PayPalPayment());
+            paymentContext.ProcessPayment(200);
+
+            paymentContext.SetPaymentStrategy(new CryptoPayment());
+            paymentContext.ProcessPayment(300);
+
+            var currencyExchange = new CurrencyExchange();
+
+            var displayObserver = new DisplayObserver();
+            var fileLogObserver = new FileLogObserver();
+            var emailObserver = new EmailNotificationObserver();
+
+            currencyExchange.RegisterObserver(displayObserver);
+            currencyExchange.RegisterObserver(fileLogObserver);
+            currencyExchange.RegisterObserver(emailObserver);
+
+            currencyExchange.SetExchangeRate("USD", 73.15);
+            currencyExchange.SetExchangeRate("EUR", 85.75);
+
+            currencyExchange.RemoveObserver(fileLogObserver);
+            currencyExchange.SetExchangeRate("GBP", 101.50);
+        }
+    }
+}
