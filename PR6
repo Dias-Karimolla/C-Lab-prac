@@ -1,0 +1,198 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+
+public enum LogLevel
+{
+    INFO,
+    WARNING,
+    ERROR
+}
+
+public class Logger
+{
+    private static Logger _instance;
+    private static readonly object _lock = new object();
+    private LogLevel _logLevel;
+    private string _logFilePath;
+
+    private Logger()
+    {
+        _logLevel = LogLevel.INFO;
+        _logFilePath = "log.txt";
+    }
+
+    public static Logger GetInstance()
+    {
+        if (_instance == null)
+        {
+            lock (_lock)
+            {
+                if (_instance == null)
+                {
+                    _instance = new Logger();
+                }
+            }
+        }
+        return _instance;
+    }
+
+    public void Log(string message, LogLevel level)
+    {
+        if (level >= _logLevel)
+        {
+            using (StreamWriter writer = new StreamWriter(_logFilePath, true))
+            {
+                writer.WriteLine($"[{DateTime.Now}] {level}: {message}");
+            }
+        }
+    }
+
+    public void SetLogLevel(LogLevel level)
+    {
+        _logLevel = level;
+    }
+
+    public void LoadConfiguration(string filePath) { }
+}
+
+public interface IReportBuilder
+{
+    void SetHeader(string header);
+    void SetContent(string content);
+    void SetFooter(string footer);
+    void AddSection(string sectionName, string sectionContent);
+    Report GetReport();
+}
+
+public class TextReportBuilder : IReportBuilder
+{
+    private Report _report = new Report();
+
+    public void SetHeader(string header) => _report.Header = header;
+    public void SetContent(string content) => _report.Content = content;
+    public void SetFooter(string footer) => _report.Footer = footer;
+    public void AddSection(string sectionName, string sectionContent) => _report.Sections.Add(sectionName, sectionContent);
+    public Report GetReport() => _report;
+}
+
+public class Report
+{
+    public string Header { get; set; }
+    public string Content { get; set; }
+    public string Footer { get; set; }
+    public Dictionary<string, string> Sections { get; } = new Dictionary<string, string>();
+
+    public void Export()
+    {
+        Console.WriteLine($"Header: {Header}");
+        Console.WriteLine($"Content: {Content}");
+        foreach (var section in Sections)
+        {
+            Console.WriteLine($"Section: {section.Key} - {section.Value}");
+        }
+        Console.WriteLine($"Footer: {Footer}");
+    }
+}
+
+public class ReportDirector
+{
+    public void ConstructReport(IReportBuilder builder)
+    {
+        builder.SetHeader("Отчет");
+        builder.SetContent("Это содержимое отчета.");
+        builder.AddSection("Раздел 1", "Содержимое раздела 1");
+        builder.AddSection("Раздел 2", "Содержимое раздела 2");
+        builder.SetFooter("Footer");
+    }
+}
+
+public class Character : ICloneable
+{
+    public int Health { get; set; }
+    public int Strength { get; set; }
+    public int Agility { get; set; }
+    public int Intelligence { get; set; }
+    public Weapon Weapon { get; set; }
+    public Armor Armor { get; set; }
+    public List<Skill> Skills { get; set; } = new List<Skill>();
+
+    public object Clone()
+    {
+        Character clone = (Character)this.MemberwiseClone();
+        clone.Weapon = (Weapon)this.Weapon.Clone();
+        clone.Armor = (Armor)this.Armor.Clone();
+        clone.Skills = new List<Skill>();
+        foreach (var skill in Skills)
+        {
+            clone.Skills.Add((Skill)skill.Clone());
+        }
+        return clone;
+    }
+}
+
+public class Weapon : ICloneable
+{
+    public int Damage { get; set; }
+    public object Clone() => this.MemberwiseClone();
+}
+
+public class Armor : ICloneable
+{
+    public int Defense { get; set; }
+    public object Clone() => this.MemberwiseClone();
+}
+
+public class Skill : ICloneable
+{
+    public string Name { get; set; }
+    public object Clone() => this.MemberwiseClone();
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        Logger logger = Logger.GetInstance();
+        logger.SetLogLevel(LogLevel.WARNING);
+
+        Thread thread1 = new Thread(() => logger.Log("Это информационное сообщение.", LogLevel.INFO));
+        Thread thread2 = new Thread(() => logger.Log("Это предупреждение.", LogLevel.WARNING));
+        Thread thread3 = new Thread(() => logger.Log("Это ошибка.", LogLevel.ERROR));
+
+        thread1.Start();
+        thread2.Start();
+        thread3.Start();
+
+        thread1.Join();
+        thread2.Join();
+        thread3.Join();
+
+        IReportBuilder builder = new TextReportBuilder();
+        ReportDirector director = new ReportDirector();
+
+        director.ConstructReport(builder);
+        Report report = builder.GetReport();
+        report.Export();
+
+        Character originalCharacter = new Character
+        {
+            Health = 100,
+            Strength = 20,
+            Agility = 15,
+            Intelligence = 10,
+            Weapon = new Weapon { Damage = 25 },
+            Armor = new Armor { Defense = 10 },
+            Skills = new List<Skill>
+            {
+                new Skill { Name = "Fireball" },
+                new Skill { Name = "Ice Blast" }
+            }
+        };
+
+        Character clonedCharacter = (Character)originalCharacter.Clone();
+        Console.WriteLine($"Original Character Health: {originalCharacter.Health}");
+        Console.WriteLine($"Cloned Character Health: {clonedCharacter.Health}");
+    }
+}
