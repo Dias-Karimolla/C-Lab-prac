@@ -1,0 +1,212 @@
+using System;
+using System.Collections.Generic;
+
+namespace ShippingStrategyPattern
+{
+    public interface IShippingStrategy
+    {
+        decimal CalculateShippingCost(decimal weight, decimal distance);
+    }
+
+    public class StandardShippingStrategy : IShippingStrategy
+    {
+        public decimal CalculateShippingCost(decimal weight, decimal distance)
+        {
+            return weight * 0.5m + distance * 0.1m;
+        }
+    }
+
+    public class ExpressShippingStrategy : IShippingStrategy
+    {
+        public decimal CalculateShippingCost(decimal weight, decimal distance)
+        {
+            return (weight * 0.75m + distance * 0.2m) + 10;
+        }
+    }
+
+    public class InternationalShippingStrategy : IShippingStrategy
+    {
+        public decimal CalculateShippingCost(decimal weight, decimal distance)
+        {
+            return weight * 1.0m + distance * 0.5m + 15;
+        }
+    }
+
+    public class OvernightShippingStrategy : IShippingStrategy
+    {
+        public decimal CalculateShippingCost(decimal weight, decimal distance)
+        {
+            return weight * 0.8m + distance * 0.3m + 20;
+        }
+    }
+
+    public class DeliveryContext
+    {
+        private IShippingStrategy _shippingStrategy;
+
+        public void SetShippingStrategy(IShippingStrategy strategy)
+        {
+            _shippingStrategy = strategy;
+        }
+
+        public decimal CalculateCost(decimal weight, decimal distance)
+        {
+            if (_shippingStrategy == null)
+            {
+                throw new InvalidOperationException("Стратегия доставки не установлена.");
+            }
+            if (weight <= 0 || distance <= 0)
+            {
+                throw new ArgumentException("Вес и расстояние должны быть положительными значениями.");
+            }
+            return _shippingStrategy.CalculateShippingCost(weight, distance);
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            DeliveryContext deliveryContext = new DeliveryContext();
+
+            Console.WriteLine("Выберите тип доставки: 1 - Стандартная, 2 - Экспресс, 3 - Международная, 4 - Ночная");
+            string choice = Console.ReadLine();
+
+            switch (choice)
+            {
+                case "1":
+                    deliveryContext.SetShippingStrategy(new StandardShippingStrategy());
+                    break;
+                case "2":
+                    deliveryContext.SetShippingStrategy(new ExpressShippingStrategy());
+                    break;
+                case "3":
+                    deliveryContext.SetShippingStrategy(new InternationalShippingStrategy());
+                    break;
+                case "4":
+                    deliveryContext.SetShippingStrategy(new OvernightShippingStrategy());
+                    break;
+                default:
+                    Console.WriteLine("Неверный выбор.");
+                    return;
+            }
+
+            Console.WriteLine("Введите вес посылки (кг):");
+            decimal weight = Convert.ToDecimal(Console.ReadLine());
+
+            Console.WriteLine("Введите расстояние доставки (км):");
+            decimal distance = Convert.ToDecimal(Console.ReadLine());
+
+            try
+            {
+                decimal cost = deliveryContext.CalculateCost(weight, distance);
+                Console.WriteLine($"Стоимость доставки: {cost:C}");
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+    }
+}
+
+namespace ObserverPattern
+{
+    public interface IObserver
+    {
+        void Update(float temperature);
+    }
+
+    public interface ISubject
+    {
+        void RegisterObserver(IObserver observer);
+        void RemoveObserver(IObserver observer);
+        void NotifyObservers();
+    }
+
+    public class WeatherStation : ISubject
+    {
+        private List<IObserver> observers;
+        private float temperature;
+
+        public WeatherStation()
+        {
+            observers = new List<IObserver>();
+        }
+
+        public void RegisterObserver(IObserver observer)
+        {
+            observers.Add(observer);
+        }
+
+        public void RemoveObserver(IObserver observer)
+        {
+            observers.Remove(observer);
+        }
+
+        public void NotifyObservers()
+        {
+            foreach (var observer in observers)
+            {
+                observer.Update(temperature);
+            }
+        }
+
+        public void SetTemperature(float newTemperature)
+        {
+            if (newTemperature < -50 || newTemperature > 50)
+            {
+                Console.WriteLine("Некорректная температура.");
+                return;
+            }
+            Console.WriteLine($"Изменение температуры: {newTemperature}°C");
+            temperature = newTemperature;
+            NotifyObservers();
+        }
+    }
+
+    public class WeatherDisplay : IObserver
+    {
+        private string _name;
+
+        public WeatherDisplay(string name)
+        {
+            _name = name;
+        }
+
+        public void Update(float temperature)
+        {
+            Console.WriteLine($"{_name} показывает новую температуру: {temperature}°C");
+        }
+    }
+
+    public class EmailAlert : IObserver
+    {
+        public void Update(float temperature)
+        {
+            Console.WriteLine($"Оповещение по email: температура изменена на {temperature}°C");
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            WeatherStation weatherStation = new WeatherStation();
+
+            WeatherDisplay mobileApp = new WeatherDisplay("Мобильное приложение");
+            WeatherDisplay digitalBillboard = new WeatherDisplay("Электронное табло");
+            EmailAlert emailAlert = new EmailAlert();
+
+            weatherStation.RegisterObserver(mobileApp);
+            weatherStation.RegisterObserver(digitalBillboard);
+            weatherStation.RegisterObserver(emailAlert);
+
+            weatherStation.SetTemperature(25.0f);
+            weatherStation.SetTemperature(30.0f);
+
+            weatherStation.RemoveObserver(digitalBillboard);
+            weatherStation.SetTemperature(28.0f);
+        }
+    }
+}
