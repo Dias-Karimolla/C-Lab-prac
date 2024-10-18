@@ -1,0 +1,183 @@
+using System;
+using System.Collections.Generic;
+
+namespace TransportManagement
+{
+    class Vehicle
+    {
+        public string Brand { get; set; }
+        public string Model { get; set; }
+        public int Year { get; set; }
+
+        public Vehicle(string brand, string model, int year)
+        {
+            Brand = brand;
+            Model = model;
+            Year = year;
+        }
+
+        public virtual void StartEngine()
+        {
+            Console.WriteLine($"{Brand} {Model} ({Year}): Двигатель запущен.");
+        }
+
+        public virtual void StopEngine()
+        {
+            Console.WriteLine($"{Brand} {Model} ({Year}): Двигатель остановлен.");
+        }
+
+        public override string ToString()
+        {
+            return $"{Brand} {Model} ({Year})";
+        }
+    }
+
+    class Car : Vehicle
+    {
+        public int DoorQuantity { get; set; }
+        public string TransmissionType { get; set; }
+
+        public Car(string brand, string model, int year, int doorQuantity, string transmissionType)
+            : base(brand, model, year)
+        {
+            DoorQuantity = doorQuantity;
+            TransmissionType = transmissionType;
+        }
+
+        public override void StartEngine()
+        {
+            base.StartEngine();
+            Console.WriteLine($"Автомобиль с {DoorQuantity} дверьми и трансмиссией {TransmissionType} готов к движению.");
+        }
+
+        public override void StopEngine()
+        {
+            base.StopEngine();
+            Console.WriteLine($"Автомобиль остановлен.");
+        }
+    }
+
+    class Motorcycle : Vehicle
+    {
+        public string BodyType { get; set; }
+        public bool HasSideBox { get; set; }
+
+        public Motorcycle(string brand, string model, int year, string bodyType, bool hasSideBox)
+            : base(brand, model, year)
+        {
+            BodyType = bodyType;
+            HasSideBox = hasSideBox;
+        }
+
+        public override void StartEngine()
+        {
+            base.StartEngine();
+            Console.WriteLine($"Мотоцикл с кузовом {BodyType} {(HasSideBox ? "имеет" : "не имеет")} бокса.");
+        }
+
+        public override void StopEngine()
+        {
+            base.StopEngine();
+            Console.WriteLine($"Мотоцикл остановлен.");
+        }
+    }
+
+    class Garage
+    {
+        public string Name { get; set; }
+        private List<Vehicle> vehicles;
+
+        public Garage(string name)
+        {
+            Name = name;
+            vehicles = new List<Vehicle>();
+        }
+
+        public void AddVehicle(Vehicle vehicle)
+        {
+            vehicles.Add(vehicle);
+            Console.WriteLine($"Транспортное средство {vehicle} добавлено в гараж {Name}.");
+        }
+
+        public void RemoveVehicle(Vehicle vehicle)
+        {
+            vehicles.Remove(vehicle);
+            Console.WriteLine($"Транспортное средство {vehicle} удалено из гаража {Name}.");
+        }
+
+        public void ListVehicles()
+        {
+            Console.WriteLine($"Транспортные средства в гараже {Name}:");
+            foreach (var vehicle in vehicles)
+            {
+                Console.WriteLine(vehicle);
+            }
+        }
+    }
+
+    class Fleet
+    {
+        private List<Garage> garages;
+
+        public Fleet()
+        {
+            garages = new List<Garage>();
+        }
+
+        public void AddGarage(Garage garage)
+        {
+            garages.Add(garage);
+            Console.WriteLine($"Гараж {garage.Name} добавлен в автопарк.");
+        }
+
+        public void RemoveGarage(Garage garage)
+        {
+            garages.Remove(garage);
+            Console.WriteLine($"Гараж {garage.Name} удален из автопарка.");
+        }
+
+        public Garage FindGarageByName(string name)
+        {
+            return garages.Find(g => g.Name == name);
+        }
+
+        public void ListGarages()
+        {
+            Console.WriteLine("Гаражи в автопарке:");
+            foreach (var garage in garages)
+            {
+                Console.WriteLine(garage.Name);
+            }
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Car car1 = new Car("Porsche", "911", 2001, 2, "Автоматическая");
+            Motorcycle moto1 = new Motorcycle("Yamaha", "MT-07", 2019, "Спортивный", true);
+
+            Garage garage1 = new Garage("Гараж 1");
+            Garage garage2 = new Garage("Гараж 2");
+
+            garage1.AddVehicle(car1);
+            garage2.AddVehicle(moto1);
+
+            Fleet fleet = new Fleet();
+            fleet.AddGarage(garage1);
+            fleet.AddGarage(garage2);
+
+            garage1.ListVehicles();
+            garage2.ListVehicles();
+
+            car1.StartEngine();
+            moto1.StartEngine();
+
+            car1.StopEngine();
+            moto1.StopEngine();
+
+            fleet.ListGarages();
+        }
+    }
+}
