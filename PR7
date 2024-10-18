@@ -1,0 +1,193 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace TravelAndStockSystem
+{
+    public interface ICostCalculationStrategy
+    {
+        double CalculateCost(double distance, string serviceClass, int passengers, bool hasDiscount);
+    }
+
+    public class AirplaneCostCalculation : ICostCalculationStrategy
+    {
+        public double CalculateCost(double distance, string serviceClass, int passengers, bool hasDiscount)
+        {
+            double baseCost = distance * 0.1;
+            if (serviceClass == "business") baseCost *= 2;
+            if (hasDiscount) baseCost *= 0.85;
+            return baseCost * passengers;
+        }
+    }
+
+    public class TrainCostCalculation : ICostCalculationStrategy
+    {
+        public double CalculateCost(double distance, string serviceClass, int passengers, bool hasDiscount)
+        {
+            double baseCost = distance * 0.05;
+            if (serviceClass == "business") baseCost *= 1.5;
+            if (hasDiscount) baseCost *= 0.8;
+            return baseCost * passengers;
+        }
+    }
+
+    public class BusCostCalculation : ICostCalculationStrategy
+    {
+        public double CalculateCost(double distance, string serviceClass, int passengers, bool hasDiscount)
+        {
+            double baseCost = distance * 0.02;
+            if (serviceClass == "business") baseCost *= 1.3;
+            if (hasDiscount) baseCost *= 0.9;
+            return baseCost * passengers;
+        }
+    }
+
+    public class TravelBookingContext
+    {
+        private ICostCalculationStrategy _costCalculationStrategy;
+
+        public TravelBookingContext(ICostCalculationStrategy strategy)
+        {
+            _costCalculationStrategy = strategy;
+        }
+
+        public void SetCostCalculationStrategy(ICostCalculationStrategy strategy)
+        {
+            _costCalculationStrategy = strategy;
+        }
+
+        public double CalculateTripCost(double distance, string serviceClass, int passengers, bool hasDiscount)
+        {
+            return _costCalculationStrategy.CalculateCost(distance, serviceClass, passengers, hasDiscount);
+        }
+    }
+
+    public interface IObserver
+    {
+        void Update(string stockSymbol, double price);
+    }
+
+    public interface ISubject
+    {
+        void RegisterObserver(IObserver observer, string stockSymbol);
+        void RemoveObserver(IObserver observer, string stockSymbol);
+        void NotifyObservers(string stockSymbol);
+    }
+
+    public class StockExchange : ISubject
+    {
+        private Dictionary<string, double> _stocks;
+        private Dictionary<string, List<IObserver>> _observers;
+
+        public StockExchange()
+        {
+            _stocks = new Dictionary<string, double>();
+            _observers = new Dictionary<string, List<IObserver>>();
+        }
+
+        public void RegisterObserver(IObserver observer, string stockSymbol)
+        {
+            if (!_observers.ContainsKey(stockSymbol))
+            {
+                _observers[stockSymbol] = new List<IObserver>();
+            }
+            _observers[stockSymbol].Add(observer);
+        }
+
+        public void RemoveObserver(IObserver observer, string stockSymbol)
+        {
+            if (_observers.ContainsKey(stockSymbol))
+            {
+                _observers[stockSymbol].Remove(observer);
+            }
+        }
+
+        public void NotifyObservers(string stockSymbol)
+        {
+            if (_observers.ContainsKey(stockSymbol))
+            {
+                foreach (var observer in _observers[stockSymbol])
+                {
+                    observer.Update(stockSymbol, _stocks[stockSymbol]);
+                }
+            }
+        }
+
+        public void UpdateStockPrice(string stockSymbol, double price)
+        {
+            _stocks[stockSymbol] = price;
+            NotifyObservers(stockSymbol);
+        }
+    }
+
+    public class Trader : IObserver
+    {
+        public string Name { get; }
+
+        public Trader(string name)
+        {
+            Name = name;
+        }
+
+        public void Update(string stockSymbol, double price)
+        {
+            Console.WriteLine($"{Name} получил обновление: акция {stockSymbol} теперь стоит {price}");
+        }
+    }
+
+    public class TradingRobot : IObserver
+    {
+        public string Name { get; }
+
+        public TradingRobot(string name)
+        {
+            Name = name;
+        }
+
+        public void Update(string stockSymbol, double price)
+        {
+            if (price > 100)
+            {
+                Console.WriteLine($"{Name} продает акцию {stockSymbol} по цене {price}");
+            }
+            else
+            {
+                Console.WriteLine($"{Name} покупает акцию {stockSymbol} по цене {price}");
+            }
+        }
+    }
+
+    class Program
+    {
+        static async Task Main(string[] args)
+        {
+            var bookingContext = new TravelBookingContext(new AirplaneCostCalculation());
+            double airplaneCost = bookingContext.CalculateTripCost(1000, "economy", 2, true);
+            Console.WriteLine($"Стоимость поездки на самолете: {airplaneCost}");
+
+            bookingContext.SetCostCalculationStrategy(new TrainCostCalculation());
+            double trainCost = bookingContext.CalculateTripCost(500, "business", 3, false);
+            Console.WriteLine($"Стоимость поездки на поезде: {trainCost}");
+
+            bookingContext.SetCostCalculationStrategy(new BusCostCalculation());
+            double busCost = bookingContext.CalculateTripCost(200, "economy", 1, true);
+            Console.WriteLine($"Стоимость поездки на автобусе: {busCost}");
+
+            var stockExchange = new StockExchange();
+
+            var trader1 = new Trader("Трейдер 1");
+            var trader2 = new Trader("Трейдер 2");
+            var robot = new TradingRobot("Торговый робот");
+
+            stockExchange.RegisterObserver(trader1, "AAPL");
+            stockExchange.RegisterObserver(trader2, "GOOG");
+            stockExchange.RegisterObserver(robot, "AAPL");
+
+            stockExchange.UpdateStockPrice("AAPL", 120.50);
+            stockExchange.UpdateStockPrice("GOOG", 98.30);
+
+            stockExchange.RemoveObserver(trader2, "GOOG");
+            stockExchange.UpdateStockPrice("GOOG", 110.50);
+        }
+    }
+}
