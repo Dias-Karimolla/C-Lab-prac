@@ -1,0 +1,248 @@
+using System;
+using System.Collections.Generic;
+
+public interface ICommand
+{
+    void Execute();
+    void Undo();
+}
+
+public class Light
+{
+    public void On() => Console.WriteLine("Свет включен.");
+    public void Off() => Console.WriteLine("Свет выключен.");
+}
+
+public class AirConditioner
+{
+    public void TurnOn() => Console.WriteLine("Кондиционер включен.");
+    public void TurnOff() => Console.WriteLine("Кондиционер выключен.");
+}
+
+public class Television
+{
+    public void TurnOn() => Console.WriteLine("Телевизор включен.");
+    public void TurnOff() => Console.WriteLine("Телевизор выключен.");
+}
+
+public class LightOnCommand : ICommand
+{
+    private Light _light;
+    public LightOnCommand(Light light) => _light = light;
+    public void Execute() => _light.On();
+    public void Undo() => _light.Off();
+}
+
+public class LightOffCommand : ICommand
+{
+    private Light _light;
+    public LightOffCommand(Light light) => _light = light;
+    public void Execute() => _light.Off();
+    public void Undo() => _light.On();
+}
+
+public class AirConditionerOnCommand : ICommand
+{
+    private AirConditioner _airConditioner;
+    public AirConditionerOnCommand(AirConditioner airConditioner) => _airConditioner = airConditioner;
+    public void Execute() => _airConditioner.TurnOn();
+    public void Undo() => _airConditioner.TurnOff();
+}
+
+public class AirConditionerOffCommand : ICommand
+{
+    private AirConditioner _airConditioner;
+    public AirConditionerOffCommand(AirConditioner airConditioner) => _airConditioner = airConditioner;
+    public void Execute() => _airConditioner.TurnOff();
+    public void Undo() => _airConditioner.TurnOn();
+}
+
+public class TelevisionOnCommand : ICommand
+{
+    private Television _television;
+    public TelevisionOnCommand(Television television) => _television = television;
+    public void Execute() => _television.TurnOn();
+    public void Undo() => _television.TurnOff();
+}
+
+public class TelevisionOffCommand : ICommand
+{
+    private Television _television;
+    public TelevisionOffCommand(Television television) => _television = television;
+    public void Execute() => _television.TurnOff();
+    public void Undo() => _television.TurnOn();
+}
+
+public class RemoteControl
+{
+    private Stack<ICommand> _commandHistory = new Stack<ICommand>();
+    private ICommand[] _slots = new ICommand[5];
+
+    public void SetCommand(int slot, ICommand command) => _slots[slot] = command;
+
+    public void ExecuteCommand(int slot)
+    {
+        if (_slots[slot] != null)
+        {
+            _slots[slot].Execute();
+            _commandHistory.Push(_slots[slot]);
+        }
+        else
+        {
+            Console.WriteLine("Команда не назначена для этого слота.");
+        }
+    }
+
+    public void UndoCommand()
+    {
+        if (_commandHistory.Count > 0)
+        {
+            _commandHistory.Pop().Undo();
+        }
+        else
+        {
+            Console.WriteLine("Нет команд для отмены.");
+        }
+    }
+
+    public void ExecuteMacro(params ICommand[] commands)
+    {
+        foreach (var command in commands)
+        {
+            command.Execute();
+            _commandHistory.Push(command);
+        }
+    }
+}
+
+public abstract class ReportGenerator
+{
+    public void GenerateReport()
+    {
+        CollectData();
+        ProcessData();
+        FormatReport();
+        SaveReport();
+        if (CustomerWantsEmail()) SendEmail();
+    }
+
+    protected abstract void CollectData();
+    protected abstract void ProcessData();
+    protected abstract void FormatReport();
+    protected abstract void SaveReport();
+
+    protected virtual bool CustomerWantsEmail() => false;
+    protected virtual void SendEmail() => Console.WriteLine("Отчет отправлен по электронной почте.");
+}
+
+public class PdfReport : ReportGenerator
+{
+    protected override void CollectData() => Console.WriteLine("Сбор данных для PDF отчета.");
+    protected override void ProcessData() => Console.WriteLine("Обработка данных для PDF отчета.");
+    protected override void FormatReport() => Console.WriteLine("Форматирование PDF отчета.");
+    protected override void SaveReport() => Console.WriteLine("Сохранение PDF отчета.");
+}
+
+public class ExcelReport : ReportGenerator
+{
+    protected override void CollectData() => Console.WriteLine("Сбор данных для Excel отчета.");
+    protected override void ProcessData() => Console.WriteLine("Обработка данных для Excel отчета.");
+    protected override void FormatReport() => Console.WriteLine("Форматирование Excel отчета.");
+    protected override void SaveReport() => Console.WriteLine("Сохранение Excel отчета.");
+    protected override bool CustomerWantsEmail() => true;
+}
+
+public class HtmlReport : ReportGenerator
+{
+    protected override void CollectData() => Console.WriteLine("Сбор данных для HTML отчета.");
+    protected override void ProcessData() => Console.WriteLine("Обработка данных для HTML отчета.");
+    protected override void FormatReport() => Console.WriteLine("Форматирование HTML отчета.");
+    protected override void SaveReport() => Console.WriteLine("Сохранение HTML отчета.");
+}
+
+public interface IMediator
+{
+    void SendMessage(string message, User user);
+    void AddUser(User user);
+}
+
+public class ChatMediator : IMediator
+{
+    private List<User> _users = new List<User>();
+
+    public void AddUser(User user) => _users.Add(user);
+
+    public void SendMessage(string message, User sender)
+    {
+        foreach (var user in _users)
+        {
+            if (user != sender)
+            {
+                user.ReceiveMessage(message);
+            }
+        }
+    }
+}
+
+public class User
+{
+    private IMediator _mediator;
+    public string Name { get; }
+
+    public User(IMediator mediator, string name)
+    {
+        _mediator = mediator;
+        Name = name;
+        _mediator.AddUser(this);
+    }
+
+    public void SendMessage(string message) => _mediator.SendMessage($"{Name}: {message}", this);
+    public void ReceiveMessage(string message) => Console.WriteLine(message);
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        RemoteControl remote = new RemoteControl();
+        Light livingRoomLight = new Light();
+        AirConditioner airConditioner = new AirConditioner();
+        Television television = new Television();
+
+        remote.SetCommand(0, new LightOnCommand(livingRoomLight));
+        remote.SetCommand(1, new LightOffCommand(livingRoomLight));
+        remote.SetCommand(2, new AirConditionerOnCommand(airConditioner));
+        remote.SetCommand(3, new AirConditionerOffCommand(airConditioner));
+        remote.SetCommand(4, new TelevisionOnCommand(television));
+
+        remote.ExecuteCommand(0);
+        remote.ExecuteCommand(1);
+        remote.ExecuteCommand(2);
+        remote.ExecuteCommand(3);
+        remote.ExecuteCommand(4);
+        remote.UndoCommand();
+        remote.UndoCommand();
+        remote.UndoCommand();
+
+        Console.WriteLine("\nВыполнение макрокоманды:");
+        remote.ExecuteMacro(new LightOnCommand(livingRoomLight), new AirConditionerOnCommand(airConditioner));
+
+        Console.WriteLine("\nГенерация отчетов:");
+        ReportGenerator pdfReport = new PdfReport();
+        pdfReport.GenerateReport();
+        ReportGenerator excelReport = new ExcelReport();
+        excelReport.GenerateReport();
+        ReportGenerator htmlReport = new HtmlReport();
+        htmlReport.GenerateReport();
+
+        Console.WriteLine("\nЧат-система:");
+        ChatMediator chatMediator = new ChatMediator();
+        User alice = new User(chatMediator, "Алиса");
+        User bob = new User(chatMediator, "Боб");
+        User charlie = new User(chatMediator, "Чарли");
+
+        alice.SendMessage("Привет, всем!");
+        bob.SendMessage("Привет, Алиса!");
+        charlie.SendMessage("Всем привет!");
+    }
+}
