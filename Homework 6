@@ -18,7 +18,7 @@ namespace DesignPatterns.Module06.Singleton
 
         public static Logger GetInstance()
         {
-            // Потокобезопасная инициализация одиночки
+            
             if (_instance == null)
             {
                 lock (_lock)
@@ -75,7 +75,7 @@ namespace DesignPatterns.Module06.Singleton
         }
     }
 
-    // Класс продукта (пицца)
+   
     public class Pizza
     {
         public string Size { get; set; }
@@ -89,7 +89,7 @@ namespace DesignPatterns.Module06.Singleton
         }
     }
 
-    // Интерфейс строителя пиццы
+  
     public interface IPizzaBuilder
     {
         void SetSize();
@@ -98,7 +98,7 @@ namespace DesignPatterns.Module06.Singleton
         Pizza GetPizza();
     }
 
-    // Конкретный строитель для пиццы "Маргарита"
+    
     public class MargaritaPizzaBuilder : IPizzaBuilder
     {
         private Pizza _pizza = new Pizza();
@@ -148,7 +148,7 @@ namespace DesignPatterns.Module06.Singleton
         }
     }
 
-    // Директор для управления процессом создания пиццы
+  
     public class PizzaDirector
     {
         private IPizzaBuilder _pizzaBuilder;
@@ -180,7 +180,7 @@ namespace DesignPatterns.Module06.Singleton
 
             try
             {
-                // Создание пиццы "Маргарита"
+                
                 IPizzaBuilder margaritaBuilder = new MargaritaPizzaBuilder();
                 PizzaDirector pizzaDirector1 = new PizzaDirector(margaritaBuilder);
                 pizzaDirector1.ConstructPizza();
