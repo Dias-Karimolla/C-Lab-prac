@@ -1,0 +1,193 @@
+using System;
+using System.Collections.Generic;
+
+public interface ICommand
+{
+    void Execute();
+    void Undo();
+}
+
+public class Light
+{
+    public void On() => Console.WriteLine("Свет включен.");
+    public void Off() => Console.WriteLine("Свет выключен.");
+}
+
+public class Door
+{
+    public void Open() => Console.WriteLine("Дверь открыта.");
+    public void Close() => Console.WriteLine("Дверь закрыта.");
+}
+
+public class Thermostat
+{
+    private int _temperature;
+    public void SetTemperature(int temperature)
+    {
+        _temperature = temperature;
+        Console.WriteLine($"Температура установлена на {_temperature}°C.");
+    }
+}
+
+public class LightOnCommand : ICommand
+{
+    private Light _light;
+    public LightOnCommand(Light light) => _light = light;
+    public void Execute() => _light.On();
+    public void Undo() => _light.Off();
+}
+
+public class LightOffCommand : ICommand
+{
+    private Light _light;
+    public LightOffCommand(Light light) => _light = light;
+    public void Execute() => _light.Off();
+    public void Undo() => _light.On();
+}
+
+public class DoorOpenCommand : ICommand
+{
+    private Door _door;
+    public DoorOpenCommand(Door door) => _door = door;
+    public void Execute() => _door.Open();
+    public void Undo() => _door.Close();
+}
+
+public class DoorCloseCommand : ICommand
+{
+    private Door _door;
+    public DoorCloseCommand(Door door) => _door = door;
+    public void Execute() => _door.Close();
+    public void Undo() => _door.Open();
+}
+
+public class ThermostatSetCommand : ICommand
+{
+    private Thermostat _thermostat;
+    private int _temperature;
+    public ThermostatSetCommand(Thermostat thermostat, int temperature)
+    {
+        _thermostat = thermostat;
+        _temperature = temperature;
+    }
+    public void Execute() => _thermostat.SetTemperature(_temperature);
+    public void Undo() => _thermostat.SetTemperature(20);
+}
+
+public class RemoteControl
+{
+    private Stack<ICommand> _commandHistory = new Stack<ICommand>();
+    public void ExecuteCommand(ICommand command)
+    {
+        command.Execute();
+        _commandHistory.Push(command);
+    }
+    public void UndoCommand()
+    {
+        if (_commandHistory.Count > 0)
+        {
+            _commandHistory.Pop().Undo();
+        }
+        else
+        {
+            Console.WriteLine("Нет команд для отмены.");
+        }
+    }
+}
+
+public abstract class Beverage
+{
+    public void PrepareRecipe()
+    {
+        BoilWater();
+        Brew();
+        PourInCup();
+        AddCondiments();
+    }
+    private void BoilWater() => Console.WriteLine("Кипячение воды...");
+    private void PourInCup() => Console.WriteLine("Наливание в чашку...");
+    protected abstract void Brew();
+    protected abstract void AddCondiments();
+}
+
+public class Tea : Beverage
+{
+    protected override void Brew() => Console.WriteLine("Заваривание чая...");
+    protected override void AddCondiments() => Console.WriteLine("Добавление лимона...");
+}
+
+public class Coffee : Beverage
+{
+    protected override void Brew() => Console.WriteLine("Заваривание кофе...");
+    protected override void AddCondiments() => Console.WriteLine("Добавление сахара...");
+}
+
+public interface IMediator
+{
+    void SendMessage(string message, User user);
+}
+
+public class ChatRoom : IMediator
+{
+    private List<User> _users = new List<User>();
+    public void RegisterUser(User user) => _users.Add(user);
+    public void SendMessage(string message, User sender)
+    {
+        foreach (var user in _users)
+        {
+            if (user != sender)
+            {
+                user.ReceiveMessage(message);
+            }
+        }
+    }
+}
+
+public class User
+{
+    private IMediator _mediator;
+    private string _name;
+    public User(IMediator mediator, string name)
+    {
+        _mediator = mediator;
+        _name = name;
+        _mediator.RegisterUser(this);
+    }
+    public void Send(string message) => _mediator.SendMessage($"{_name}: {message}", this);
+    public void ReceiveMessage(string message) => Console.WriteLine(message);
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        Light light = new Light();
+        Door door = new Door();
+        Thermostat thermostat = new Thermostat();
+        RemoteControl remote = new RemoteControl();
+        ICommand lightOn = new LightOnCommand(light);
+        ICommand lightOff = new LightOffCommand(light);
+        ICommand doorOpen = new DoorOpenCommand(door);
+        ICommand doorClose = new DoorCloseCommand(door);
+        ICommand setTemperature = new ThermostatSetCommand(thermostat, 22);
+        remote.ExecuteCommand(lightOn);
+        remote.ExecuteCommand(doorOpen);
+        remote.ExecuteCommand(setTemperature);
+        remote.UndoCommand();
+        remote.UndoCommand();
+        remote.UndoCommand();
+        Beverage tea = new Tea();
+        Console.WriteLine("Приготовление чая:");
+        tea.PrepareRecipe();
+        Beverage coffee = new Coffee();
+        Console.WriteLine("\nПриготовление кофе:");
+        coffee.PrepareRecipe();
+        ChatRoom chatRoom = new ChatRoom();
+        User user1 = new User(chatRoom, "Алиса");
+        User user2 = new User(chatRoom, "Боб");
+        User user3 = new User(chatRoom, "Чарли");
+        user1.Send("Привет, всем!");
+        user2.Send("Привет, Алиса!");
+        user3.Send("Всем привет!");
+    }
+}
