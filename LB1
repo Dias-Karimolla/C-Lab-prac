@@ -1,0 +1,85 @@
+using System;
+using System.Collections.Generic;
+
+namespace EmployeeManagement
+{
+    class Employee
+    {
+        public string Name { get; set; }
+        public int EmployeeId { get; set; }
+        public string Position { get; set; }
+
+        public Employee(string name, int employeeId, string position)
+        {
+            Name = name;
+            EmployeeId = employeeId;
+            Position = position;
+        }
+
+        public virtual decimal CalculateSalary()
+        {
+            return 0;
+        }
+
+        public override string ToString()
+        {
+            return $"{Name} (ID: {EmployeeId}), Position: {Position}";
+        }
+    }
+
+    class Worker : Employee
+    {
+        public decimal HourlyRate { get; set; }
+        public int HoursWorked { get; set; }
+
+        public Worker(string name, int employeeId, decimal hourlyRate, int hoursWorked)
+            : base(name, employeeId, "Worker")
+        {
+            HourlyRate = hourlyRate;
+            HoursWorked = hoursWorked;
+        }
+
+        public override decimal CalculateSalary()
+        {
+            return HourlyRate * HoursWorked;
+        }
+    }
+
+    class Manager : Employee
+    {
+        public decimal FixedSalary { get; set; }
+        public decimal Bonus { get; set; }
+
+        public Manager(string name, int employeeId, decimal fixedSalary, decimal bonus)
+            : base(name, employeeId, "Manager")
+        {
+            FixedSalary = fixedSalary;
+            Bonus = bonus;
+        }
+
+        public override decimal CalculateSalary()
+        {
+            return FixedSalary + Bonus;
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            List<Employee> employees = new List<Employee>
+            {
+                new Worker("Alice", 1, 20m, 160),
+                new Worker("Bob", 2, 18m, 170),
+                new Manager("Charlie", 3, 3000m, 500m)
+            };
+
+            foreach (var employee in employees)
+            {
+                Console.WriteLine(employee);
+                Console.WriteLine($"Salary: {employee.CalculateSalary()}");
+                Console.WriteLine();
+            }
+        }
+    }
+}
