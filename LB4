@@ -1,0 +1,186 @@
+public class Invoice
+{
+    public int Id { get; set; }
+    public List<Item> Items { get; set; }
+    public double TaxRate { get; set; }
+
+    public Invoice(int id, List<Item> items, double taxRate)
+    {
+        Id = id;
+        Items = items;
+        TaxRate = taxRate;
+    }
+}
+
+public class Item
+{
+    public string Name { get; set; }
+    public double Price { get; set; }
+
+    public Item(string name, double price)
+    {
+        Name = name;
+        Price = price;
+    }
+}
+
+public class InvoiceCalculator
+{
+    public double CalculateTotal(Invoice invoice)
+    {
+        double subTotal = 0;
+        foreach (var item in invoice.Items)
+        {
+            subTotal += item.Price;
+        }
+        return subTotal + (subTotal * invoice.TaxRate);
+    }
+}
+
+public class InvoiceRepository
+{
+    public void SaveToDatabase(Invoice invoice)
+    {
+        Console.WriteLine($"Invoice {invoice.Id} saved to database.");
+    }
+}
+
+public abstract class DiscountCalculator
+{
+    public abstract double CalculateDiscount(double amount);
+}
+
+public class RegularDiscountCalculator : DiscountCalculator
+{
+    public override double CalculateDiscount(double amount)
+    {
+        return amount;
+    }
+}
+
+public class SilverDiscountCalculator : DiscountCalculator
+{
+    public override double CalculateDiscount(double amount)
+    {
+        return amount * 0.9;
+    }
+}
+
+public class GoldDiscountCalculator : DiscountCalculator
+{
+    public override double CalculateDiscount(double amount)
+    {
+        return amount * 0.8;
+    }
+}
+
+public interface IWorker
+{
+    void Work();
+}
+
+public interface IEater
+{
+    void Eat();
+}
+
+public interface ISleeper
+{
+    void Sleep();
+}
+
+public class HumanWorker : IWorker, IEater, ISleeper
+{
+    public void Work()
+    {
+        Console.WriteLine("Human working.");
+    }
+
+    public void Eat()
+    {
+        Console.WriteLine("Human eating.");
+    }
+
+    public void Sleep()
+    {
+        Console.WriteLine("Human sleeping.");
+    }
+}
+
+public class RobotWorker : IWorker
+{
+    public void Work()
+    {
+        Console.WriteLine("Robot working.");
+    }
+}
+
+public interface IMessageSender
+{
+    void SendMessage(string message);
+}
+
+public class EmailService : IMessageSender
+{
+    public void SendMessage(string message)
+    {
+        Console.WriteLine($"Sending email: {message}");
+    }
+}
+
+public class SmsService : IMessageSender
+{
+    public void SendMessage(string message)
+    {
+        Console.WriteLine($"Sending SMS: {message}");
+    }
+}
+
+public class Notification
+{
+    private readonly IMessageSender _messageSender;
+
+    public Notification(IMessageSender messageSender)
+    {
+        _messageSender = messageSender;
+    }
+
+    public void Send(string message)
+    {
+        _messageSender.SendMessage(message);
+    }
+}
+
+public class Program
+{
+    static void Main(string[] args)
+    {
+        var items = new List<Item> { new Item("Item1", 100), new Item("Item2", 200) };
+        var invoice = new Invoice(1, items, 0.2);
+        var calculator = new InvoiceCalculator();
+        var repository = new InvoiceRepository();
+
+        double total = calculator.CalculateTotal(invoice);
+        repository.SaveToDatabase(invoice);
+        Console.WriteLine($"Total price: {total}");
+
+        DiscountCalculator discountCalculator = new GoldDiscountCalculator();
+        double discountedAmount = discountCalculator.CalculateDiscount(1000);
+        Console.WriteLine($"Discounted amount: {discountedAmount}");
+
+        IWorker humanWorker = new HumanWorker();
+        humanWorker.Work();
+
+        IWorker robotWorker = new RobotWorker();
+        robotWorker.Work();
+
+        IMessageSender emailSender = new EmailService();
+        IMessageSender smsSender = new SmsService();
+
+        var notification = new Notification(emailSender);
+        notification.Send("Order placed");
+
+        notification = new Notification(smsSender);
+        notification.Send("Order shipped");
+    }
+}
