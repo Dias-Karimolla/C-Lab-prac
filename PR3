@@ -1,0 +1,98 @@
+public class User
+{
+    public string Name { get; set; }
+    public string Email { get; set; }
+    public string Role { get; set; }
+
+    public User(string name, string email, string role)
+    {
+        Name = name;
+        Email = email;
+        Role = role;
+    }
+
+    public void Update(string name, string email, string role)
+    {
+        Name = name;
+        Email = email;
+        Role = role;
+    }
+
+    public override string ToString()
+    {
+        return $"Name: {Name}, Email: {Email}, Role: {Role}";
+    }
+}
+
+public class UserManager
+{
+    private List<User> _users = new List<User>();
+
+    public void AddUser(string name, string email, string role)
+    {
+        if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(role))
+        {
+            Console.WriteLine("Invalid user data.");
+            return;
+        }
+
+        _users.Add(new User(name, email, role));
+        Console.WriteLine($"User {name} added.");
+    }
+
+    public void RemoveUser(string email)
+    {
+        var user = _users.FirstOrDefault(u => u.Email == email);
+        if (user != null)
+        {
+            _users.Remove(user);
+            Console.WriteLine($"User {user.Name} removed.");
+        }
+        else
+        {
+            Console.WriteLine("User not found.");
+        }
+    }
+
+    public void UpdateUser(string email, string newName, string newEmail, string newRole)
+    {
+        var user = _users.FirstOrDefault(u => u.Email == email);
+        if (user != null)
+        {
+            user.Update(newName, newEmail, newRole);
+            Console.WriteLine($"User {newName} updated.");
+        }
+        else
+        {
+            Console.WriteLine("User not found.");
+        }
+    }
+
+    public void ListUsers()
+    {
+        foreach (var user in _users)
+        {
+            Console.WriteLine(user);
+        }
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        var userManager = new UserManager();
+        userManager.AddUser("Alice", "alice@example.com", "Admin");
+        userManager.AddUser("Bob", "bob@example.com", "User");
+
+        Console.WriteLine("\nAll users:");
+        userManager.ListUsers();
+
+        userManager.UpdateUser("bob@example.com", "Bob Updated", "bob.updated@example.com", "User");
+
+        userManager.RemoveUser("alice@example.com");
+
+        Console.WriteLine("\nAll users after update and delete:");
+        userManager.ListUsers();
+    }
+}
