@@ -1,0 +1,59 @@
+public class OrderService
+{
+    private double CalculateTotalPrice(int quantity, double price)
+    {
+        return quantity * price;
+    }
+
+    private void PrintOrder(string action, string productName, double totalPrice)
+    {
+        Console.WriteLine($"Order for {productName} {action}. Total: {totalPrice}");
+    }
+
+    public void CreateOrder(string productName, int quantity, double price)
+    {
+        double totalPrice = CalculateTotalPrice(quantity, price);
+        PrintOrder("created", productName, totalPrice);
+    }
+
+    public void UpdateOrder(string productName, int quantity, double price)
+    {
+        double totalPrice = CalculateTotalPrice(quantity, price);
+        PrintOrder("updated", productName, totalPrice);
+    }
+}
+
+public abstract class Vehicle
+{
+    public void Start()
+    {
+        Console.WriteLine($"{GetType().Name} is starting");
+    }
+
+    public void Stop()
+    {
+        Console.WriteLine($"{GetType().Name} is stopping");
+    }
+}
+
+public class Car : Vehicle { }
+
+public class Truck : Vehicle { }
+
+class Program
+{
+    static void Main()
+    {
+        var orderService = new OrderService();
+        orderService.CreateOrder("Laptop", 2, 1500);
+        orderService.UpdateOrder("Laptop", 3, 1500);
+
+        Vehicle car = new Car();
+        car.Start();
+        car.Stop();
+
+        Vehicle truck = new Truck();
+        truck.Start();
+        truck.Stop();
+    }
+}
