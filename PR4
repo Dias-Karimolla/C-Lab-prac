@@ -1,0 +1,144 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public interface IPayment
+{
+    void ProcessPayment(double amount);
+}
+
+public class CreditCardPayment : IPayment
+{
+    public void ProcessPayment(double amount)
+    {
+        Console.WriteLine($"Оплата картой на сумму: {amount}");
+    }
+}
+
+public class PayPalPayment : IPayment
+{
+    public void ProcessPayment(double amount)
+    {
+        Console.WriteLine($"Оплата через PayPal на сумму: {amount}");
+    }
+}
+
+public class BankTransferPayment : IPayment
+{
+    public void ProcessPayment(double amount)
+    {
+        Console.WriteLine($"Оплата банковским переводом на сумму: {amount}");
+    }
+}
+
+public interface IDelivery
+{
+    void DeliverOrder(Order order);
+}
+
+public class CourierDelivery : IDelivery
+{
+    public void DeliverOrder(Order order)
+    {
+        Console.WriteLine("Заказ будет доставлен курьером.");
+    }
+}
+
+public class PostDelivery : IDelivery
+{
+    public void DeliverOrder(Order order)
+    {
+        Console.WriteLine("Заказ будет отправлен почтой.");
+    }
+}
+
+public class PickUpPointDelivery : IDelivery
+{
+    public void DeliverOrder(Order order)
+    {
+        Console.WriteLine("Заказ можно забрать в пункте самовывоза.");
+    }
+}
+
+public interface INotification
+{
+    void SendNotification(string message);
+}
+
+public class EmailNotification : INotification
+{
+    public void SendNotification(string message)
+    {
+        Console.WriteLine($"Email уведомление: {message}");
+    }
+}
+
+public class SmsNotification : INotification
+{
+    public void SendNotification(string message)
+    {
+        Console.WriteLine($"SMS уведомление: {message}");
+    }
+}
+
+public class DiscountCalculator
+{
+    public double ApplyDiscount(double total)
+    {
+        
+        return total; 
+    }
+}
+
+public class Product
+{
+    public string Name { get; set; }
+    public double Price { get; set; }
+    public int Quantity { get; set; }
+}
+
+public class Order
+{
+    public List<Product> Products { get; private set; }
+    public IPayment PaymentMethod { get; set; }
+    public IDelivery DeliveryMethod { get; set; }
+
+    public Order()
+    {
+        Products = new List<Product>();
+    }
+
+    public void AddProduct(Product product)
+    {
+        Products.Add(product);
+    }
+
+    public double CalculateTotal(DiscountCalculator discountCalculator)
+    {
+        double total = Products.Sum(p => p.Price * p.Quantity);
+        return discountCalculator.ApplyDiscount(total);
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        Order order = new Order();
+        order.AddProduct(new Product { Name = "Товар 1", Price = 100, Quantity = 2 });
+        order.AddProduct(new Product { Name = "Товар 2", Price = 150, Quantity = 1 });
+
+        order.PaymentMethod = new CreditCardPayment();
+        order.DeliveryMethod = new CourierDelivery();
+
+        DiscountCalculator discountCalculator = new DiscountCalculator();
+        double total = order.CalculateTotal(discountCalculator);
+
+        order.PaymentMethod.ProcessPayment(total);
+
+        INotification notification = new EmailNotification();
+        notification.SendNotification($"Ваш заказ на сумму {total} успешно оформлен.");
+
+        order.DeliveryMethod.DeliverOrder(order);
+    }
+}
