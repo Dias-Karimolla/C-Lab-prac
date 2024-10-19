@@ -1,0 +1,44 @@
+public class Circle
+{
+    private double _radius;
+
+    public Circle(double radius)
+    {
+        _radius = radius;
+    }
+
+    public double CalculateArea()
+    {
+        return Math.PI * _radius * _radius;
+    }
+}
+
+public class MathOperations
+{
+    public int Add(int a, int b)
+    {
+        return a + b;
+    }
+}
+
+public class Logger
+{
+    public void Log(string message)
+    {
+        Console.WriteLine(message);
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        var circle = new Circle(5);
+        Console.WriteLine($"Circle area: {circle.CalculateArea()}");
+
+        var mathOperations = new MathOperations();
+        var result = mathOperations.Add(4, 6);
+        var logger = new Logger();
+        logger.Log($"Result: {result}");
+    }
+}
