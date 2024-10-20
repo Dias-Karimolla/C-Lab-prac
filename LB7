@@ -1,212 +1,107 @@
 using System;
 using System.Collections.Generic;
 
-namespace ShippingStrategyPattern
+public interface IObserver
 {
-    public interface IShippingStrategy
+    void Update(float temperature);
+}
+
+public interface ISubject
+{
+    void RegisterObserver(IObserver observer);
+    void RemoveObserver(IObserver observer);
+    void NotifyObservers();
+}
+
+public class WeatherStation : ISubject
+{
+    private List<IObserver> observers;
+    private float temperature;
+
+    public WeatherStation()
     {
-        decimal CalculateShippingCost(decimal weight, decimal distance);
+        observers = new List<IObserver>();
     }
 
-    public class StandardShippingStrategy : IShippingStrategy
+    public void RegisterObserver(IObserver observer)
     {
-        public decimal CalculateShippingCost(decimal weight, decimal distance)
-        {
-            return weight * 0.5m + distance * 0.1m;
-        }
+        observers.Add(observer);
     }
 
-    public class ExpressShippingStrategy : IShippingStrategy
+    public void RemoveObserver(IObserver observer)
     {
-        public decimal CalculateShippingCost(decimal weight, decimal distance)
+        if (!observers.Contains(observer))
         {
-            return (weight * 0.75m + distance * 0.2m) + 10;
+            Console.WriteLine("Попытка удалить несуществующего наблюдателя.");
+            return;
         }
+        observers.Remove(observer);
     }
 
-    public class InternationalShippingStrategy : IShippingStrategy
+    public void NotifyObservers()
     {
-        public decimal CalculateShippingCost(decimal weight, decimal distance)
+        foreach (var observer in observers)
         {
-            return weight * 1.0m + distance * 0.5m + 15;
-        }
-    }
-
-    public class OvernightShippingStrategy : IShippingStrategy
-    {
-        public decimal CalculateShippingCost(decimal weight, decimal distance)
-        {
-            return weight * 0.8m + distance * 0.3m + 20;
-        }
-    }
-
-    public class DeliveryContext
-    {
-        private IShippingStrategy _shippingStrategy;
-
-        public void SetShippingStrategy(IShippingStrategy strategy)
-        {
-            _shippingStrategy = strategy;
-        }
-
-        public decimal CalculateCost(decimal weight, decimal distance)
-        {
-            if (_shippingStrategy == null)
-            {
-                throw new InvalidOperationException("Стратегия доставки не установлена.");
-            }
-            if (weight <= 0 || distance <= 0)
-            {
-                throw new ArgumentException("Вес и расстояние должны быть положительными значениями.");
-            }
-            return _shippingStrategy.CalculateShippingCost(weight, distance);
+            observer.Update(temperature);
         }
     }
 
-    class Program
+    public void SetTemperature(float newTemperature)
     {
-        static void Main(string[] args)
-        {
-            DeliveryContext deliveryContext = new DeliveryContext();
-
-            Console.WriteLine("Выберите тип доставки: 1 - Стандартная, 2 - Экспресс, 3 - Международная, 4 - Ночная");
-            string choice = Console.ReadLine();
-
-            switch (choice)
-            {
-                case "1":
-                    deliveryContext.SetShippingStrategy(new StandardShippingStrategy());
-                    break;
-                case "2":
-                    deliveryContext.SetShippingStrategy(new ExpressShippingStrategy());
-                    break;
-                case "3":
-                    deliveryContext.SetShippingStrategy(new InternationalShippingStrategy());
-                    break;
-                case "4":
-                    deliveryContext.SetShippingStrategy(new OvernightShippingStrategy());
-                    break;
-                default:
-                    Console.WriteLine("Неверный выбор.");
-                    return;
-            }
-
-            Console.WriteLine("Введите вес посылки (кг):");
-            decimal weight = Convert.ToDecimal(Console.ReadLine());
-
-            Console.WriteLine("Введите расстояние доставки (км):");
-            decimal distance = Convert.ToDecimal(Console.ReadLine());
-
-            try
-            {
-                decimal cost = deliveryContext.CalculateCost(weight, distance);
-                Console.WriteLine($"Стоимость доставки: {cost:C}");
-            }
-            catch (ArgumentException ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-        }
+        Console.WriteLine($"Изменение температуры: {newTemperature}°C");
+        temperature = newTemperature;
+        NotifyObservers();
     }
 }
 
-namespace ObserverPattern
+public class WeatherDisplay : IObserver
 {
-    public interface IObserver
+    private string _name;
+
+    public WeatherDisplay(string name)
     {
-        void Update(float temperature);
+        _name = name;
     }
 
-    public interface ISubject
+    public void Update(float temperature)
     {
-        void RegisterObserver(IObserver observer);
-        void RemoveObserver(IObserver observer);
-        void NotifyObservers();
+        Console.WriteLine($"{_name} показывает новую температуру: {temperature}°C");
+    }
+}
+
+public class EmailAlert : IObserver
+{
+    private string _email;
+
+    public EmailAlert(string email)
+    {
+        _email = email;
     }
 
-    public class WeatherStation : ISubject
+    public void Update(float temperature)
     {
-        private List<IObserver> observers;
-        private float temperature;
-
-        public WeatherStation()
-        {
-            observers = new List<IObserver>();
-        }
-
-        public void RegisterObserver(IObserver observer)
-        {
-            observers.Add(observer);
-        }
-
-        public void RemoveObserver(IObserver observer)
-        {
-            observers.Remove(observer);
-        }
-
-        public void NotifyObservers()
-        {
-            foreach (var observer in observers)
-            {
-                observer.Update(temperature);
-            }
-        }
-
-        public void SetTemperature(float newTemperature)
-        {
-            if (newTemperature < -50 || newTemperature > 50)
-            {
-                Console.WriteLine("Некорректная температура.");
-                return;
-            }
-            Console.WriteLine($"Изменение температуры: {newTemperature}°C");
-            temperature = newTemperature;
-            NotifyObservers();
-        }
+        Console.WriteLine($"Отправка email на {_email}: текущая температура {temperature}°C");
     }
+}
 
-    public class WeatherDisplay : IObserver
+class Program
+{
+    static void Main(string[] args)
     {
-        private string _name;
+        WeatherStation weatherStation = new WeatherStation();
 
-        public WeatherDisplay(string name)
-        {
-            _name = name;
-        }
+        WeatherDisplay mobileApp = new WeatherDisplay("Мобильное приложение");
+        WeatherDisplay digitalBillboard = new WeatherDisplay("Электронное табло");
+        EmailAlert emailAlert = new EmailAlert("example@mail.com");
 
-        public void Update(float temperature)
-        {
-            Console.WriteLine($"{_name} показывает новую температуру: {temperature}°C");
-        }
-    }
+        weatherStation.RegisterObserver(mobileApp);
+        weatherStation.RegisterObserver(digitalBillboard);
+        weatherStation.RegisterObserver(emailAlert);
 
-    public class EmailAlert : IObserver
-    {
-        public void Update(float temperature)
-        {
-            Console.WriteLine($"Оповещение по email: температура изменена на {temperature}°C");
-        }
-    }
+        weatherStation.SetTemperature(25.0f);
+        weatherStation.SetTemperature(30.0f);
 
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            WeatherStation weatherStation = new WeatherStation();
-
-            WeatherDisplay mobileApp = new WeatherDisplay("Мобильное приложение");
-            WeatherDisplay digitalBillboard = new WeatherDisplay("Электронное табло");
-            EmailAlert emailAlert = new EmailAlert();
-
-            weatherStation.RegisterObserver(mobileApp);
-            weatherStation.RegisterObserver(digitalBillboard);
-            weatherStation.RegisterObserver(emailAlert);
-
-            weatherStation.SetTemperature(25.0f);
-            weatherStation.SetTemperature(30.0f);
-
-            weatherStation.RemoveObserver(digitalBillboard);
-            weatherStation.SetTemperature(28.0f);
-        }
+        weatherStation.RemoveObserver(digitalBillboard);
+        weatherStation.SetTemperature(28.0f);
     }
 }
