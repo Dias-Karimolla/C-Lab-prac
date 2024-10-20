@@ -42,12 +42,16 @@ public class Logger
     {
         if (level >= _logLevel)
         {
-            using (StreamWriter writer = new StreamWriter(_logFilePath, true))
+            lock (_lock) // Ensure thread-safe access to the log file
             {
-                writer.WriteLine($"[{DateTime.Now}] {level}: {message}");
+                using (StreamWriter writer = new StreamWriter(_logFilePath, true))
+                {
+                    writer.WriteLine($"[{DateTime.Now}] {level}: {message}");
+                }
             }
         }
     }
+
 
     public void SetLogLevel(LogLevel level)
     {
