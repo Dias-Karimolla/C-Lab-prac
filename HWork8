@@ -1,0 +1,145 @@
+using System;
+using System.Collections.Generic;
+
+namespace ChatApp
+{
+    public interface IMediator
+    {
+        void SendMessage(string message, IUser sender);
+        void SendPrivateMessage(string message, IUser sender, string receiverName);
+        void AddUser(IUser user);
+        void RemoveUser(IUser user);
+        IUser GetUserByName(string name);
+    }
+
+    public class ChatMediator : IMediator
+    {
+        private List<IUser> users;
+
+        public ChatMediator()
+        {
+            users = new List<IUser>();
+        }
+
+        private void NotifyUsers(string message)
+        {
+            foreach (var user in users)
+            {
+                user.ReceiveSystemMessage(message);
+            }
+        }
+
+        public void AddUser(IUser user)
+        {
+            users.Add(user);
+            NotifyUsers($"{user.GetName()} присоединился к чату.");
+        }
+
+        public void RemoveUser(IUser user)
+        {
+            users.Remove(user);
+            NotifyUsers($"{user.GetName()} покинул чат.");
+        }
+
+        public void SendMessage(string message, IUser sender)
+        {
+            foreach (var user in users)
+            {
+                if (user != sender)
+                {
+                    user.ReceiveMessage(message, sender);
+                }
+            }
+        }
+
+        public void SendPrivateMessage(string message, IUser sender, string receiverName)
+        {
+            IUser receiver = GetUserByName(receiverName);
+            if (receiver != null)
+            {
+                receiver.ReceiveMessage($"[Private]: {message}", sender);
+            }
+            else
+            {
+                sender.ReceiveSystemMessage($"Пользователь с именем {receiverName} не найден.");
+            }
+        }
+
+        public IUser GetUserByName(string name)
+        {
+            return users.Find(user => user.GetName().Equals(name, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    public interface IUser
+    {
+        void SendMessage(string message);
+        void SendPrivateMessage(string message, string receiverName);
+        void ReceiveMessage(string message, IUser sender);
+        void ReceiveSystemMessage(string message);
+        string GetName();
+    }
+
+    public class User : IUser
+    {
+        private string name;
+        private IMediator mediator;
+
+        public User(string name, IMediator mediator)
+        {
+            this.name = name;
+            this.mediator = mediator;
+        }
+
+        public string GetName()
+        {
+            return name;
+        }
+
+        public void SendMessage(string message)
+        {
+            Console.WriteLine($"{name} отправил сообщение: {message}");
+            mediator.SendMessage(message, this);
+        }
+
+        public void SendPrivateMessage(string message, string receiverName)
+        {
+            Console.WriteLine($"{name} отправил личное сообщение {receiverName}: {message}");
+            mediator.SendPrivateMessage(message, this, receiverName);
+        }
+
+        public void ReceiveMessage(string message, IUser sender)
+        {
+            Console.WriteLine($"{name} получил сообщение от {sender.GetName()}: {message}");
+        }
+
+        public void ReceiveSystemMessage(string message)
+        {
+            Console.WriteLine($"[Системное сообщение для {name}]: {message}");
+        }
+    }
+
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            ChatMediator chat = new ChatMediator();
+
+            IUser user1 = new User("User1", chat);
+            IUser user2 = new User("User2", chat);
+            IUser user3 = new User("User3", chat);
+            IUser user4 = new User("User4", chat);
+
+            chat.AddUser(user1);
+            chat.AddUser(user2);
+            chat.AddUser(user3);
+            chat.AddUser(user4);
+
+            user1.SendMessage("Привет всем!");
+            user2.SendPrivateMessage("Привет, как дела?", "User3");
+            user4.SendPrivateMessage("Ты здесь?", "User5");
+            chat.RemoveUser(user3);
+            user4.SendPrivateMessage("Ну ты чего пропал? епт", "User3");
+        }
+    }
+}
