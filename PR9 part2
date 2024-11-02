@@ -1,0 +1,131 @@
+using System;
+
+
+public interface IInternalDeliveryService
+{
+    void DeliverOrder(string orderId);
+    string GetDeliveryStatus(string orderId);
+}
+
+public class InternalDeliveryService : IInternalDeliveryService
+{
+    public void DeliverOrder(string orderId)
+    {
+        Console.WriteLine($"Доставка заказа {orderId} через внутреннюю службу.");
+    }
+
+    public string GetDeliveryStatus(string orderId)
+    {
+        return $"Статус доставки заказа {orderId}: Доставляется.";
+    }
+}
+
+
+public class ExternalLogisticsServiceA
+{
+    public void ShipItem(int itemId)
+    {
+        Console.WriteLine($"Отправка товара {itemId} через ExternalLogisticsServiceA.");
+    }
+
+    public string TrackShipment(int shipmentId)
+    {
+        return $"Статус доставки {shipmentId} через ExternalLogisticsServiceA: В пути.";
+    }
+}
+
+
+public class LogisticsAdapterA : IInternalDeliveryService
+{
+    private ExternalLogisticsServiceA _externalService;
+
+    public LogisticsAdapterA(ExternalLogisticsServiceA externalService)
+    {
+        _externalService = externalService;
+    }
+
+    public void DeliverOrder(string orderId)
+    {
+        _externalService.ShipItem(int.Parse(orderId));
+    }
+
+    public string GetDeliveryStatus(string orderId)
+    {
+        return _externalService.TrackShipment(int.Parse(orderId));
+    }
+}
+
+
+public class ExternalLogisticsServiceB
+{
+    public void SendPackage(string packageInfo)
+    {
+        Console.WriteLine($"Отправка посылки {packageInfo} через ExternalLogisticsServiceB.");
+    }
+
+    public string CheckPackageStatus(string trackingCode)
+    {
+        return $"Статус посылки {trackingCode} через ExternalLogisticsServiceB: В пути.";
+    }
+}
+
+
+public class LogisticsAdapterB : IInternalDeliveryService
+{
+    private ExternalLogisticsServiceB _externalService;
+
+    public LogisticsAdapterB(ExternalLogisticsServiceB externalService)
+    {
+        _externalService = externalService;
+    }
+
+    public void DeliverOrder(string orderId)
+    {
+        _externalService.SendPackage(orderId);
+    }
+
+    public string GetDeliveryStatus(string orderId)
+    {
+        return _externalService.CheckPackageStatus(orderId);
+    }
+}
+
+
+public class DeliveryServiceFactory
+{
+    public static IInternalDeliveryService GetDeliveryService(string serviceType)
+    {
+        switch (serviceType)
+        {
+            case "Internal":
+                return new InternalDeliveryService();
+            case "ExternalA":
+                return new LogisticsAdapterA(new ExternalLogisticsServiceA());
+            case "ExternalB":
+                return new LogisticsAdapterB(new ExternalLogisticsServiceB());
+            default:
+                throw new ArgumentException("Неизвестный тип службы доставки");
+        }
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        
+        IInternalDeliveryService internalService = DeliveryServiceFactory.GetDeliveryService("Internal");
+        internalService.DeliverOrder("123");
+        Console.WriteLine(internalService.GetDeliveryStatus("123"));
+
+       
+        IInternalDeliveryService externalServiceA = DeliveryServiceFactory.GetDeliveryService("ExternalA");
+        externalServiceA.DeliverOrder("456");
+        Console.WriteLine(externalServiceA.GetDeliveryStatus("456"));
+
+        
+        IInternalDeliveryService externalServiceB = DeliveryServiceFactory.GetDeliveryService("ExternalB");
+        externalServiceB.DeliverOrder("789");
+        Console.WriteLine(externalServiceB.GetDeliveryStatus("789"));
+    }
+}
