@@ -1,0 +1,121 @@
+using System;
+using System.Collections.Generic;
+
+public interface IReport
+{
+    string Generate();
+}
+
+
+public class SalesReport : IReport
+{
+    public string Generate()
+    {
+        return "Отчет по продажам: Список проданных товаров...";
+    }
+}
+
+
+public class UserReport : IReport
+{
+    public string Generate()
+    {
+        return "Отчет по пользователям: Список активных пользователей...";
+    }
+}
+
+public abstract class ReportDecorator : IReport
+{
+    protected IReport _report;
+
+    public ReportDecorator(IReport report)
+    {
+        _report = report;
+    }
+
+    public virtual string Generate()
+    {
+        return _report.Generate();
+    }
+}
+
+
+public class DateFilterDecorator : ReportDecorator
+{
+    private DateTime _startDate;
+    private DateTime _endDate;
+
+    public DateFilterDecorator(IReport report, DateTime startDate, DateTime endDate) : base(report)
+    {
+        _startDate = startDate;
+        _endDate = endDate;
+    }
+
+    public override string Generate()
+    {
+        return $"{base.Generate()}\nФильтр по датам: {_startDate.ToShortDateString()} - {_endDate.ToShortDateString()}";
+    }
+}
+
+
+public class SortingDecorator : ReportDecorator
+{
+    private string _sortBy;
+
+    public SortingDecorator(IReport report, string sortBy) : base(report)
+    {
+        _sortBy = sortBy;
+    }
+
+    public override string Generate()
+    {
+        return $"{base.Generate()}\nСортировка по: {_sortBy}";
+    }
+}
+
+
+public class CsvExportDecorator : ReportDecorator
+{
+    public CsvExportDecorator(IReport report) : base(report) { }
+
+    public override string Generate()
+    {
+        return $"{base.Generate()}\nЭкспорт в формат CSV выполнен.";
+    }
+}
+
+public class PdfExportDecorator : ReportDecorator
+{
+    public PdfExportDecorator(IReport report) : base(report) { }
+
+    public override string Generate()
+    {
+        return $"{base.Generate()}\nЭкспорт в формат PDF выполнен.";
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        
+        IReport report = new SalesReport();
+        Console.WriteLine(report.Generate());
+
+        
+        report = new DateFilterDecorator(report, DateTime.Now.AddDays(-30), DateTime.Now);
+        Console.WriteLine(report.Generate());
+
+        
+        report = new SortingDecorator(report, "сумма продаж");
+        Console.WriteLine(report.Generate());
+
+         
+        report = new CsvExportDecorator(report);
+        Console.WriteLine(report.Generate());
+
+        
+        report = new PdfExportDecorator(report);
+        Console.WriteLine(report.Generate());
+    }
+}
