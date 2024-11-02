@@ -1,0 +1,50 @@
+using System;
+
+public interface IPaymentProcessor
+{
+    void ProcessPayment(double amount);
+}
+
+public class PayPalPaymentProcessor : IPaymentProcessor
+{
+    public void ProcessPayment(double amount)
+    {
+        Console.WriteLine($"Обработка платежа на сумму {amount} через PayPal.");
+    }
+}
+
+public class StripePaymentService
+{
+    public void MakeTransaction(double totalAmount)
+    {
+        Console.WriteLine($"Совершение транзакции на сумму {totalAmount} через Stripe.");
+    }
+}
+
+public class StripePaymentAdapter : IPaymentProcessor
+{
+    private StripePaymentService _stripePaymentService;
+
+    public StripePaymentAdapter(StripePaymentService stripePaymentService)
+    {
+        _stripePaymentService = stripePaymentService;
+    }
+
+    public void ProcessPayment(double amount)
+    {
+        _stripePaymentService.MakeTransaction(amount);
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        IPaymentProcessor paypalProcessor = new PayPalPaymentProcessor();
+        paypalProcessor.ProcessPayment(100.0);
+
+        StripePaymentService stripeService = new StripePaymentService();
+        IPaymentProcessor stripeAdapter = new StripePaymentAdapter(stripeService);
+        stripeAdapter.ProcessPayment(200.0);
+    }
+}
