@@ -1,0 +1,143 @@
+using System;
+
+public class TV
+{
+    public void TurnOn()
+    {
+        Console.WriteLine("TV is turned on.");
+    }
+
+    public void TurnOff()
+    {
+        Console.WriteLine("TV is turned off.");
+    }
+
+    public void SetChannel(int channel)
+    {
+        Console.WriteLine($"TV channel set to {channel}.");
+    }
+}
+
+public class AudioSystem
+{
+    public void TurnOn()
+    {
+        Console.WriteLine("Audio system is turned on.");
+    }
+
+    public void TurnOff()
+    {
+        Console.WriteLine("Audio system is turned off.");
+    }
+
+    public void SetVolume(int level)
+    {
+        Console.WriteLine($"Audio volume set to {level}.");
+    }
+}
+
+public class DVDPlayer
+{
+    public void Play()
+    {
+        Console.WriteLine("DVD is playing.");
+    }
+
+    public void Pause()
+    {
+        Console.WriteLine("DVD is paused.");
+    }
+
+    public void Stop()
+    {
+        Console.WriteLine("DVD is stopped.");
+    }
+}
+
+public class GameConsole
+{
+    public void TurnOn()
+    {
+        Console.WriteLine("Game console is turned on.");
+    }
+
+    public void StartGame(string gameName)
+    {
+        Console.WriteLine($"Starting game: {gameName}.");
+    }
+}
+
+public class HomeTheaterFacade
+{
+    private TV _tv;
+    private AudioSystem _audioSystem;
+    private DVDPlayer _dvdPlayer;
+    private GameConsole _gameConsole;
+
+    public HomeTheaterFacade(TV tv, AudioSystem audioSystem, DVDPlayer dvdPlayer, GameConsole gameConsole)
+    {
+        _tv = tv;
+        _audioSystem = audioSystem;
+        _dvdPlayer = dvdPlayer;
+        _gameConsole = gameConsole;
+    }
+
+    public void WatchMovie()
+    {
+        Console.WriteLine("Preparing to watch a movie...");
+        _tv.TurnOn();
+        _audioSystem.TurnOn();
+        _audioSystem.SetVolume(7);
+        _dvdPlayer.Play();
+        Console.WriteLine("Movie is now playing.");
+    }
+
+    public void EndMovie()
+    {
+        Console.WriteLine("Ending movie...");
+        _dvdPlayer.Stop();
+        _tv.TurnOff();
+        _audioSystem.TurnOff();
+        Console.WriteLine("Movie has ended.");
+    }
+
+    public void StartGaming(string gameName)
+    {
+        Console.WriteLine("Starting game mode...");
+        _tv.TurnOn();
+        _gameConsole.TurnOn();
+        _gameConsole.StartGame(gameName);
+        Console.WriteLine("Game is ready.");
+    }
+
+    public void ShutdownSystem()
+    {
+        Console.WriteLine("Shutting down the system...");
+        _tv.TurnOff();
+        _audioSystem.TurnOff();
+        _dvdPlayer.Stop();
+        _gameConsole.TurnOn();
+        Console.WriteLine("System shutdown complete.");
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        TV tv = new TV();
+        AudioSystem audio = new AudioSystem();
+        DVDPlayer dvd = new DVDPlayer();
+        GameConsole console = new GameConsole();
+
+        HomeTheaterFacade homeTheater = new HomeTheaterFacade(tv, audio, dvd, console);
+
+        homeTheater.WatchMovie();
+        Console.WriteLine();
+        homeTheater.EndMovie();
+        Console.WriteLine();
+        homeTheater.StartGaming("Adventure Quest");
+        Console.WriteLine();
+        homeTheater.ShutdownSystem();
+    }
+}
