@@ -1,0 +1,180 @@
+using System;
+using System.Collections.Generic;
+
+public abstract class OrganizationComponent
+{
+    public string Name { get; set; }
+
+    public OrganizationComponent(string name)
+    {
+        Name = name;
+    }
+
+    public abstract void Display(string indent = "");
+    public abstract int GetBudget();
+    public abstract int GetEmployeeCount();
+}
+
+public class Employee : OrganizationComponent
+{
+    public string Position { get; set; }
+    public int Salary { get; set; }
+
+    public Employee(string name, string position, int salary) : base(name)
+    {
+        Position = position;
+        Salary = salary;
+    }
+
+    public override void Display(string indent = "")
+    {
+        Console.WriteLine($"{indent}- Employee: {Name}, Position: {Position}, Salary: {Salary}");
+    }
+
+    public override int GetBudget()
+    {
+        return Salary;
+    }
+
+    public override int GetEmployeeCount()
+    {
+        return 1;
+    }
+
+    public void ChangeSalary(int newSalary)
+    {
+        Salary = newSalary;
+        Console.WriteLine($"{Name}'s salary has been updated to {Salary}");
+    }
+}
+
+public class Department : OrganizationComponent
+{
+    private List<OrganizationComponent> _components = new List<OrganizationComponent>();
+
+    public Department(string name) : base(name) { }
+
+    public void Add(OrganizationComponent component)
+    {
+        _components.Add(component);
+    }
+
+    public void Remove(OrganizationComponent component)
+    {
+        _components.Remove(component);
+    }
+
+    public override void Display(string indent = "")
+    {
+        Console.WriteLine($"{indent}+ Department: {Name}");
+        foreach (var component in _components)
+        {
+            component.Display(indent + "  ");
+        }
+    }
+
+    public override int GetBudget()
+    {
+        int totalBudget = 0;
+        foreach (var component in _components)
+        {
+            totalBudget += component.GetBudget();
+        }
+        return totalBudget;
+    }
+
+    public override int GetEmployeeCount()
+    {
+        int count = 0;
+        foreach (var component in _components)
+        {
+            count += component.GetEmployeeCount();
+        }
+        return count;
+    }
+
+    public OrganizationComponent FindEmployee(string name)
+    {
+        foreach (var component in _components)
+        {
+            if (component is Employee employee && employee.Name == name)
+            {
+                return employee;
+            }
+            else if (component is Department department)
+            {
+                var found = department.FindEmployee(name);
+                if (found != null)
+                    return found;
+            }
+        }
+        return null;
+    }
+
+    public void DisplayAllEmployees(string indent = "")
+    {
+        foreach (var component in _components)
+        {
+            component.Display(indent);
+            if (component is Department department)
+            {
+                department.DisplayAllEmployees(indent + "  ");
+            }
+        }
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        
+        Employee employee1 = new Employee("Alice", "Manager", 5000);
+        Employee employee2 = new Employee("Bob", "Developer", 4000);
+        Employee employee3 = new Employee("Charlie", "Tester", 3000);
+        Employee employee4 = new Employee("David", "HR", 3500);
+
+        
+        Department rootDepartment = new Department("Head Office");
+        Department itDepartment = new Department("IT Department");
+        Department hrDepartment = new Department("HR Department");
+
+        
+        rootDepartment.Add(employee1);
+        rootDepartment.Add(itDepartment);
+        rootDepartment.Add(hrDepartment);
+
+        itDepartment.Add(employee2);
+        itDepartment.Add(employee3);
+
+        hrDepartment.Add(employee4);
+
+
+        Console.WriteLine("Organization Structure:");
+        rootDepartment.Display();
+
+        
+        Console.WriteLine($"Total Budget of Head Office: {rootDepartment.GetBudget()}");
+        Console.WriteLine($"Total Employees in Head Office: {rootDepartment.GetEmployeeCount()}");
+
+        
+        var employee = rootDepartment.FindEmployee("Charlie");
+        if (employee != null)
+        {
+            Console.WriteLine($"Employee found: {employee.Name}");
+        }
+
+        
+        if (employee is Employee emp)
+        {
+            emp.ChangeSalary(3200);
+        }
+
+
+        Console.WriteLine($"Updated Total Budget of Head Office: {rootDepartment.GetBudget()}");
+
+       
+        Console.WriteLine("All Employees in the Organization:");
+        rootDepartment.DisplayAllEmployees();
+    }
+}
