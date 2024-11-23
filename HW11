@@ -1,0 +1,147 @@
+using System;
+using System.Collections.Generic;
+
+
+public class Book
+{
+    public string Title { get; set; }
+    public string Author { get; set; }
+    public string ISBN { get; set; }
+    public bool IsAvailable { get; set; } = true;
+
+    public Book(string title, string author, string isbn)
+    {
+        Title = title;
+        Author = author;
+        ISBN = isbn;
+    }
+}
+
+public class Reader
+{
+    public string Name { get; set; }
+    public List<Book> RentedBooks { get; set; } = new List<Book>();
+    private const int MaxBooks = 3;
+
+    public Reader(string name)
+    {
+        Name = name;
+    }
+
+    public bool RentBook(Book book)
+    {
+        if (RentedBooks.Count >= MaxBooks || !book.IsAvailable)
+        {
+            return false;
+        }
+        RentedBooks.Add(book);
+        book.IsAvailable = false;
+        return true;
+    }
+
+    public bool ReturnBook(Book book)
+    {
+        if (RentedBooks.Remove(book))
+        {
+            book.IsAvailable = true;
+            return true;
+        }
+        return false;
+    }
+}
+
+
+public class Librarian
+{
+    public string Name { get; set; }
+
+    public Librarian(string name)
+    {
+        Name = name;
+    }
+
+    public void ManageBooks(Library library)
+    {
+        library.DisplayBooks();
+    }
+}
+
+public class Library
+{
+    public List<Book> Books { get; set; } = new List<Book>();
+
+    public void AddBook(Book book)
+    {
+        Books.Add(book);
+    }
+
+    public void RemoveBook(Book book)
+    {
+        Books.Remove(book);
+    }
+
+    public void DisplayBooks()
+    {
+        foreach (var book in Books)
+        {
+            Console.WriteLine($"Title: {book.Title}, Author: {book.Author}, Status: {(book.IsAvailable ? "Available" : "Rented")}");
+        }
+    }
+
+    public List<Book> SearchByTitle(string title)
+    {
+        return Books.FindAll(b => b.Title.Contains(title, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public List<Book> SearchByAuthor(string author)
+    {
+        return Books.FindAll(b => b.Author.Contains(author, StringComparison.OrdinalIgnoreCase));
+    }
+}
+
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        
+        Library library = new Library();
+        library.AddBook(new Book("1984", "George Orwell", "12345"));
+        library.AddBook(new Book("Brave New World", "Aldous Huxley", "67890"));
+        library.AddBook(new Book("Fahrenheit 451", "Ray Bradbury", "11223"));
+
+       
+        Reader reader = new Reader("Alice");
+
+        
+        var bookToRent = library.Books[0];
+        if (reader.RentBook(bookToRent))
+        {
+            Console.WriteLine($"{reader.Name} rented \"{bookToRent.Title}\".");
+        }
+        else
+        {
+            Console.WriteLine($"Could not rent \"{bookToRent.Title}\".");
+        }
+
+        Console.WriteLine("\nAvailable books in library:");
+        library.DisplayBooks();
+
+        if (reader.ReturnBook(bookToRent))
+        {
+            Console.WriteLine($"\n{reader.Name} returned \"{bookToRent.Title}\".");
+        }
+
+        
+        Console.WriteLine("\nAvailable books in library after return:");
+        library.DisplayBooks();
+
+        
+        Console.WriteLine("\nSearch results for books containing '1984':");
+        var foundBooks = library.SearchByTitle("1984");
+        foreach (var book in foundBooks)
+        {
+            Console.WriteLine($"Found: {book.Title} by {book.Author}");
+        }
+    }
+}
