@@ -107,22 +107,22 @@ namespace CarOrderSystem
             var order = new CarOrder();
 
             // Симуляция процесса
-            Console.WriteLine("Current State: " + order.State);
+            Console.WriteLine("Текущее состояние: " + order.State);
             order.SelectCar();
 
-            Console.WriteLine("Current State: " + order.State);
+            Console.WriteLine("Текущее состояние: " + order.State);
             order.ConfirmOrder();
 
-            Console.WriteLine("Current State: " + order.State);
+            Console.WriteLine("Текущее состояние: " + order.State);
             order.CarArrives();
 
-            Console.WriteLine("Current State: " + order.State);
+            Console.WriteLine("Текущее состояние: " + order.State);
             order.StartTrip();
 
-            Console.WriteLine("Current State: " + order.State);
+            Console.WriteLine("Текущее состояние: " + order.State);
             order.CompleteTrip();
 
-            Console.WriteLine("Current State: " + order.State);
+            Console.WriteLine("Текущее состояние: " + order.State);
         }
     }
 }
