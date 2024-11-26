@@ -1,0 +1,128 @@
+using System;
+
+namespace CarOrderSystem
+{
+    public enum TripState
+    {
+        Idle,
+        CarSelected,
+        OrderConfirmed,
+        CarArrived,
+        InTrip,
+        TripCompleted,
+        TripCancelled
+    }
+
+    public class CarOrder
+    {
+        public TripState State { get; private set; } = TripState.Idle;
+
+        public void SelectCar()
+        {
+            if (State == TripState.Idle)
+            {
+                State = TripState.CarSelected;
+                Console.WriteLine("Car selected. Please confirm the order.");
+            }
+            else
+            {
+                Console.WriteLine("Cannot select car in current state: " + State);
+            }
+        }
+
+        public void ConfirmOrder()
+        {
+            if (State == TripState.CarSelected)
+            {
+                State = TripState.OrderConfirmed;
+                Console.WriteLine("Order confirmed. Car is on its way.");
+            }
+            else
+            {
+                Console.WriteLine("Cannot confirm order in current state: " + State);
+            }
+        }
+
+        public void CarArrives()
+        {
+            if (State == TripState.OrderConfirmed)
+            {
+                State = TripState.CarArrived;
+                Console.WriteLine("Car has arrived. Ready to start the trip.");
+            }
+            else
+            {
+                Console.WriteLine("Car cannot arrive in current state: " + State);
+            }
+        }
+
+        public void StartTrip()
+        {
+            if (State == TripState.CarArrived)
+            {
+                State = TripState.InTrip;
+                Console.WriteLine("Trip started. Enjoy your ride!");
+            }
+            else
+            {
+                Console.WriteLine("Cannot start trip in current state: " + State);
+            }
+        }
+
+        public void CompleteTrip()
+        {
+            if (State == TripState.InTrip)
+            {
+                State = TripState.TripCompleted;
+                Console.WriteLine("Trip completed. Thank you for riding!");
+            }
+            else
+            {
+                Console.WriteLine("Cannot complete trip in current state: " + State);
+            }
+        }
+
+        public void CancelOrder()
+        {
+            if (State != TripState.InTrip && State != TripState.TripCompleted)
+            {
+                State = TripState.TripCancelled;
+                Console.WriteLine("Order cancelled.");
+            }
+            else
+            {
+                Console.WriteLine("Cannot cancel order in current state: " + State);
+            }
+        }
+    }
+}
+
+
+namespace CarOrderSystem
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            var order = new CarOrder();
+
+            // Симуляция процесса
+            Console.WriteLine("Current State: " + order.State);
+            order.SelectCar();
+
+            Console.WriteLine("Current State: " + order.State);
+            order.ConfirmOrder();
+
+            Console.WriteLine("Current State: " + order.State);
+            order.CarArrives();
+
+            Console.WriteLine("Current State: " + order.State);
+            order.StartTrip();
+
+            Console.WriteLine("Current State: " + order.State);
+            order.CompleteTrip();
+
+            Console.WriteLine("Current State: " + order.State);
+        }
+    }
+}
