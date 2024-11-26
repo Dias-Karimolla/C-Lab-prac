@@ -22,11 +22,11 @@ namespace CarOrderSystem
             if (State == TripState.Idle)
             {
                 State = TripState.CarSelected;
-                Console.WriteLine("Car selected. Please confirm the order.");
+                Console.WriteLine("Автомобиль выбран. Подтвердите заказ");
             }
             else
             {
-                Console.WriteLine("Cannot select car in current state: " + State);
+                Console.WriteLine("Невозможно выбрать автомобиль в текущем состоянии: " + State);
             }
         }
 
@@ -35,11 +35,11 @@ namespace CarOrderSystem
             if (State == TripState.CarSelected)
             {
                 State = TripState.OrderConfirmed;
-                Console.WriteLine("Order confirmed. Car is on its way.");
+                Console.WriteLine("Заказ подтвержден. Автомобиль уже в пути");
             }
             else
             {
-                Console.WriteLine("Cannot confirm order in current state: " + State);
+                Console.WriteLine("Невозможно подтвердить заказ в текущем состоянии " + State);
             }
         }
 
@@ -48,11 +48,11 @@ namespace CarOrderSystem
             if (State == TripState.OrderConfirmed)
             {
                 State = TripState.CarArrived;
-                Console.WriteLine("Car has arrived. Ready to start the trip.");
+                Console.WriteLine("Автомобиль прибыл. Готовы начать поездку");
             }
             else
             {
-                Console.WriteLine("Car cannot arrive in current state: " + State);
+                Console.WriteLine("Автомобиль не может прибыть в текущем состоянии: " + State);
             }
         }
 
@@ -61,11 +61,11 @@ namespace CarOrderSystem
             if (State == TripState.CarArrived)
             {
                 State = TripState.InTrip;
-                Console.WriteLine("Trip started. Enjoy your ride!");
+                Console.WriteLine("Поездка началась. Приятной поездки!");
             }
             else
             {
-                Console.WriteLine("Cannot start trip in current state: " + State);
+                Console.WriteLine("Невозможно начать поездку в текущем состоянии: " + State);
             }
         }
 
@@ -74,11 +74,11 @@ namespace CarOrderSystem
             if (State == TripState.InTrip)
             {
                 State = TripState.TripCompleted;
-                Console.WriteLine("Trip completed. Thank you for riding!");
+                Console.WriteLine("Поездка завершена. Спасибо за использование сервиса!");
             }
             else
             {
-                Console.WriteLine("Cannot complete trip in current state: " + State);
+                Console.WriteLine("Невозможно завершить поездку в текущем состоянии: " + State);
             }
         }
 
@@ -87,11 +87,11 @@ namespace CarOrderSystem
             if (State != TripState.InTrip && State != TripState.TripCompleted)
             {
                 State = TripState.TripCancelled;
-                Console.WriteLine("Order cancelled.");
+                Console.WriteLine("Заказ отменен.");
             }
             else
             {
-                Console.WriteLine("Cannot cancel order in current state: " + State);
+                Console.WriteLine("Невозможно отменить заказ в текущем состоянии: " + State);
             }
         }
     }
