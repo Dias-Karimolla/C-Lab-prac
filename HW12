@@ -1,0 +1,146 @@
+using System;
+
+namespace TicketMachine
+{
+    public interface IState
+    {
+        void SelectTicket();
+        void InsertMoney();
+        void DispenseTicket();
+        void CancelTransaction();
+    }
+
+    public class TicketMachine
+    {
+        public IState IdleState { get; }
+        public IState WaitingForMoneyState { get; }
+        public IState MoneyReceivedState { get; }
+        public IState TransactionCanceledState { get; }
+        public IState TicketDispensedState { get; }
+
+        public IState CurrentState { get; set; }
+
+        public TicketMachine()
+        {
+            IdleState = new IdleState(this);
+            WaitingForMoneyState = new WaitingForMoneyState(this);
+            MoneyReceivedState = new MoneyReceivedState(this);
+            TransactionCanceledState = new TransactionCanceledState(this);
+            TicketDispensedState = new TicketDispensedState(this);
+
+            CurrentState = IdleState;
+        }
+
+        public void SelectTicket() => CurrentState.SelectTicket();
+        public void InsertMoney() => CurrentState.InsertMoney();
+        public void DispenseTicket() => CurrentState.DispenseTicket();
+        public void CancelTransaction() => CurrentState.CancelTransaction();
+    }
+
+    public class IdleState : IState
+    {
+        private readonly TicketMachine _machine;
+        public IdleState(TicketMachine machine) => _machine = machine;
+
+        public void SelectTicket()
+        {
+            Console.WriteLine("Билет выбран. Ожидается оплата...");
+            _machine.CurrentState = _machine.WaitingForMoneyState;
+        }
+
+        public void InsertMoney() => Console.WriteLine("Сначала выберите билет.");
+        public void DispenseTicket() => Console.WriteLine("Нет билета для выдачи.");
+        public void CancelTransaction() => Console.WriteLine("Нет транзакции для отмены.");
+    }
+
+    public class WaitingForMoneyState : IState
+    {
+        private readonly TicketMachine _machine;
+        public WaitingForMoneyState(TicketMachine machine) => _machine = machine;
+
+        public void SelectTicket() => Console.WriteLine("Билет уже выбран. Пожалуйста, внесите деньги.");
+        public void InsertMoney()
+        {
+            Console.WriteLine("Деньги внесены. Обрабатываем....");
+            _machine.CurrentState = _machine.MoneyReceivedState;
+        }
+
+        public void DispenseTicket() => Console.WriteLine("Пожалуйста, внесите деньги.");
+        public void CancelTransaction()
+        {
+            Console.WriteLine("Транзакция отменена.");
+            _machine.CurrentState = _machine.TransactionCanceledState;
+        }
+    }
+
+    public class MoneyReceivedState : IState
+    {
+        private readonly TicketMachine _machine;
+        public MoneyReceivedState(TicketMachine machine) => _machine = machine;
+
+        public void SelectTicket() => Console.WriteLine("Деньги получены. Выдача билета...");
+        public void InsertMoney() => Console.WriteLine("Деньги уже внесены.");
+        public void DispenseTicket()
+        {
+            Console.WriteLine("Билет выдан. Спасибо!");
+            _machine.CurrentState = _machine.TicketDispensedState;
+        }
+
+        public void CancelTransaction()
+        {
+            Console.WriteLine("Транзакция отменена. Возврат средств...");
+            _machine.CurrentState = _machine.TransactionCanceledState;
+        }
+    }
+
+    public class TicketDispensedState : IState
+    {
+        private readonly TicketMachine _machine;
+        public TicketDispensedState(TicketMachine machine) => _machine = machine;
+
+        public void SelectTicket() => Console.WriteLine("Транзакция завершена. Начните новую.");
+        public void InsertMoney() => Console.WriteLine("Транзакция завершена. Начните новую");
+        public void DispenseTicket() => Console.WriteLine("Билет уже выдан.");
+        public void CancelTransaction() => Console.WriteLine("Транзакция завершена. Невозможно отменить.");
+    }
+
+    public class TransactionCanceledState : IState
+    {
+        private readonly TicketMachine _machine;
+        public TransactionCanceledState(TicketMachine machine) => _machine = machine;
+
+        public void SelectTicket() => Console.WriteLine("Транзакция отменена. Начните новую..");
+        public void InsertMoney() => Console.WriteLine("Транзакция отменена. Начните новую..");
+        public void DispenseTicket() => Console.WriteLine("Транзакция отменена. Невозможно выдать билет.");
+        public void CancelTransaction() => Console.WriteLine("Транзакция уже отменена.");
+    }
+}
+
+
+namespace TicketMachine
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+           
+            TicketMachine machine = new TicketMachine();
+
+            
+            Console.WriteLine("Начало работы автомата...");
+
+            
+            machine.SelectTicket();
+
+            
+            machine.InsertMoney();
+
+            machine.DispenseTicket();
+
+            
+            machine.CancelTransaction();
+
+            Console.WriteLine("Работа завершена.");
+        }
+    }
+}
