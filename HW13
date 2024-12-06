@@ -1,0 +1,101 @@
+using System;
+using System.Collections.Generic;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        Console.WriteLine("Запрос доступности площадки...");
+        bool isVenueAvailable = CheckVenueAvailability();
+
+        if (isVenueAvailable)
+        {
+            Console.WriteLine("Площадка доступна. Отправка информации о стоимости и условиях.");
+        }
+        else
+        {
+            Console.WriteLine("Площадка недоступна. Предложение выбрать другую дату/площадку.");
+            return;
+        }
+
+        Console.WriteLine("Клиент подтверждает выбор площадки...");
+        bool isPaymentSuccessful = ProcessPayment();
+
+        if (isPaymentSuccessful)
+        {
+            Console.WriteLine("Платеж успешен. Бронирование подтверждено.");
+            NotifyAdministrator();
+            NotifyClient();
+        }
+        else
+        {
+            Console.WriteLine("Платеж отклонен. Предложение повторить оплату.");
+            return;
+        }
+
+        Console.WriteLine("Администратор отправляет задачи подрядчикам...");
+        List<string> tasks = AssignTasksToContractors();
+
+        Console.WriteLine("Подрядчики подтверждают выполнение задач...");
+        foreach (var task in tasks)
+        {
+            Console.WriteLine($"Задача '{task}' выполнена.");
+        }
+
+        Console.WriteLine("Создание отчета о мероприятии...");
+        GenerateReport();
+
+        Console.WriteLine("Отправка уведомления клиенту с просьбой оценить сервис...");
+        RequestFeedback();
+
+        Console.WriteLine("Процесс завершен.");
+    }
+
+    static bool CheckVenueAvailability()
+    {
+        return true;
+    }
+
+    static bool ProcessPayment()
+    {
+        Console.WriteLine("Обработка платежа через платежный шлюз...");
+        return true; // Успешный платеж.
+    }
+
+    static void NotifyAdministrator()
+    {
+        Console.WriteLine("Уведомление администратора о бронировании.");
+    }
+
+    static void NotifyClient()
+    {
+        Console.WriteLine("Уведомление клиента о подтверждении бронирования.");
+    }
+
+    static List<string> AssignTasksToContractors()
+    {
+        List<string> tasks = new List<string>
+        {
+            "Подготовка декораций",
+            "Организация питания",
+            "Настройка оборудования"
+        };
+
+        foreach (var task in tasks)
+        {
+            Console.WriteLine($"Задача '{task}' отправлена подрядчику.");
+        }
+
+        return tasks;
+    }
+
+    static void GenerateReport()
+    {
+        Console.WriteLine("Отчет о выполненных задачах сформирован.");
+    }
+
+    static void RequestFeedback()
+    {
+        Console.WriteLine("Запрос обратной связи у клиента.");
+    }
+}
